@@ -1,7 +1,6 @@
 'use client';
 import styles from "app/styles/components/InstagramPosts.module.scss"
 import { useEffect } from 'react';
-import { FaInstagram} from 'react-icons/fa'
 
 interface InstagramPostProps {
   url: string;
@@ -17,7 +16,7 @@ const InstagramPost = ({ url }: InstagramPostProps) => {
       script.async = true;
       document.body.appendChild(script);
     } else {
-      // @ts-ignore
+      // @ts-expect-error beacuse-yes
       if (window.instgrm) window.instgrm.Embeds.process();
     }
   }, [url]);

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "../styles/global.scss";
-import Header from "app/components/Header";
 import Navbar from "app/components/Navbar";
-import Carousel from "app/components/Carousel";
 import WhatsappButton from "app/components/WhatsappButton";
 
 const poppins = Poppins({

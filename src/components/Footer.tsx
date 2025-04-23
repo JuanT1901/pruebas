@@ -1,12 +1,13 @@
 import styles from 'app/styles/components/Footer.module.scss'
 import { FaFacebookF, FaInstagram, FaWhatsapp } from 'react-icons/fa'
+import Image from "next/image"
 
 const Footer = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.logo}>
-          <img src="/logo.png" alt="Logo del colegio" />
+          <Image src="/logo.svg" alt="Logo del colegio"/>
         </div>
         <div className={styles.links}>
           <a href="#quieroserpartedeludoclub">Quiero se parte de Ludo Club</a>

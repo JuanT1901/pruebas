@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import styles from "app/styles/components/Navbar.module.scss";
 import Image from "next/image";
+import Link from "next/link"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,14 +13,15 @@ const Navbar = () => {
   return (
     <nav className={styles.navbar}>
       <div className={styles.container}>
-        <a className={styles.imageContainer} href="/">
+        <Link href="/">
           <Image
             src="/logo.png"
             width={90}
             height={50}
             alt="logo ludo club"
           />
-        </a>
+        </Link>
+        
         <button className={styles.toggle} onClick={toggleMenu}>
           ☰
         </button>
