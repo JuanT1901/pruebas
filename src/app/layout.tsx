@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
+import "../styles/global.scss";
+import Header from "app/components/Header";
+import Navbar from "app/components/Navbar";
+import Carousel from "app/components/Carousel";
+import WhatsappButton from "app/components/WhatsappButton";
+
+const poppins = Poppins({
+  weight: ['100', '200', '300', '400', '500', '600', '700'],
+  variable: "--font-poppins",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Ludo Club",
+  description: "Página escolar de colegio Ludo Club",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className={poppins.variable}>
+      <body className={`${poppins.variable}`}>
+        <Navbar />
+        {children}
+        <WhatsappButton />
+      </body>
+    </html>
+  );
+}
