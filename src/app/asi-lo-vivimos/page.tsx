@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image'
 import styles from 'app/styles/asi-lo-vivimos/asi-lo-vivimos.module.scss';
 
 const AsiLoVivimos = () => {
