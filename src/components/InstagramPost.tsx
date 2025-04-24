@@ -16,7 +16,7 @@ const InstagramPost = ({ url }: InstagramPostProps) => {
       script.async = true;
       document.body.appendChild(script);
     } else {
-      // @ts-expect-error beacuse-yes
+      // @ts-expect-error: Instagram embed script may not be loaded yet
       if (window.instgrm) window.instgrm.Embeds.process();
     }
   }, [url]);
@@ -24,7 +24,6 @@ const InstagramPost = ({ url }: InstagramPostProps) => {
   return (
     <div className={styles.instagramPosts}>
       <div className={styles.instagramSection}>
-        <p>Instagram</p>
       <div
         dangerouslySetInnerHTML={{
           __html: `

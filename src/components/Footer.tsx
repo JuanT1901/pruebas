@@ -7,7 +7,18 @@ const Footer = () => {
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.logo}>
-          <Image src="/logo.svg" alt="Logo del colegio"/>
+          <Image 
+            src="/logo.png" 
+            alt="Logo del colegio"
+            width={100}
+            height={1000} 
+          />
+        </div>
+        <div>
+          <h3 className={styles.footerTitles}>Dirección</h3>
+          <p className={styles.footerTexts}>Cr 14 # 5 - 77</p>
+          <h3 className={styles.footerTitles}>Teléfono</h3>
+          <p className={styles.footerTexts}>314 469 8955</p>
         </div>
         <div className={styles.links}>
           <a href="#quieroserpartedeludoclub">Quiero se parte de Ludo Club</a>

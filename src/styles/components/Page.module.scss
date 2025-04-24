@@ -1,0 +1,12 @@
+.title{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(90deg,  #f9ce34 0%, #ee2a7b 50%, #6228d7 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: 1.4em;
+  font-weight: 600;
+}

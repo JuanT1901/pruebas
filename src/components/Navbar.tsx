@@ -15,6 +15,7 @@ const Navbar = () => {
       <div className={styles.container}>
         <Link href="/">
           <Image
+            className={styles.imageContainer}
             src="/logo.png"
             width={90}
             height={50}
@@ -26,10 +27,11 @@ const Navbar = () => {
           ☰
         </button>
         <ul className={`${styles.menu} ${isOpen ? styles.active : styles.closed}`}>
-          <li><a href="#inicio">Quiero ser parte de Ludo Club</a></li>
-          <li><a href="#nosotros">Así lo vivimos</a></li>
-          <li><a href="#oferta">Ponte en contacto</a></li>
-          <li><a href="#contacto">Plataformas</a></li>
+          <li><a href="quiero-ser-parte">Quiero ser parte de Ludo Club</a></li>
+          <li><a href="asi-lo-vivimos">Así lo vivimos</a></li>
+          <li><a href="ponte-en-contacto">Ponte en contacto</a></li>
+          <li><a href="plataformas">Plataformas</a></li>
+          <li><a href="https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=8608">Pagos</a></li>
         </ul>
       </div>
     </nav>
