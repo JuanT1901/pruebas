@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { FaLaptop, FaUserGraduate, FaChalkboardTeacher, FaUserTie } from 'react-icons/fa';
+import { FaUserGraduate, FaChalkboardTeacher, FaUserTie } from 'react-icons/fa';
 import styles from 'app/styles/components/MainCards.module.scss';
 
 const cards = [
