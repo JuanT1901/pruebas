@@ -1,6 +1,21 @@
 .container {
   text-align: center;
 
+  .cardContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  
+  .icon {
+    font-size: 1.8rem;
+    color: #2196f3;
+    flex-shrink: 0;
+    margin-top: 0.9rem;
+  }
+  
+
   h1 {
     font-size: 1.75rem;
     margin: 2rem 0 0 0;

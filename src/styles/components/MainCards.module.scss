@@ -1,0 +1,76 @@
+.sidebar {
+  padding: 1rem;
+
+  @media (min-width: 768px) {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 180px;
+    background-color: #fafafa;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem 1rem;
+  }
+  
+  .title {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+  }
+}
+
+.cardGrid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 1rem;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.card {
+  border: 2px solid;
+  border-radius: 1rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  transition: background 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  width: 80%;
+
+  h3 {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+
+  &:hover {
+    background: currentColor;
+    color: #fff;
+
+    .icon {
+      color: #fff;
+      transform: scale(1.2);
+    }
+  }
+}
+
+.icon {
+  font-size: 3rem;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.active {
+  color: #fff;
+
+  h3 {
+    color: #fff;
+  }
+
+  .icon {
+    color: #fff;
+  }
+}
