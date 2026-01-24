@@ -27,11 +27,11 @@ const Navbar = () => {
           ☰
         </button>
         <ul className={`${styles.menu} ${isOpen ? styles.active : styles.closed}`}>
-          <li><a href="quiero-ser-parte">Quiero ser parte de Ludo Club</a></li>
-          <li><a href="asi-lo-vivimos">Así lo vivimos</a></li>
-          <li><a href="ponte-en-contacto">Ponte en contacto</a></li>
-          <li><a href="plataformas">Plataformas</a></li>
-          <li><a href="https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=8608">Pagos</a></li>
+          <li><Link href="quiero-ser-parte">Quiero ser parte de Ludo Club</Link></li>
+          <li><Link href="asi-lo-vivimos">Así lo vivimos</Link></li>
+          <li><Link href="ponte-en-contacto">Ponte en contacto</Link></li>
+          <li><Link href="plataformas">Plataformas</Link></li>
+          <li><Link href="https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=8608">Pagos</Link></li>
         </ul>
       </div>
     </nav>
