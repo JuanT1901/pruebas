@@ -10,3 +10,29 @@
   font-size: 1.4em;
   font-weight: 600;
 }
+
+.layoutGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+
+  @media (min-width: 1024px) {
+    padding: 40px;
+    align-items: center;
+  }
+}
+
+.feed {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}

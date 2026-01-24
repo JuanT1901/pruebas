@@ -14,7 +14,7 @@ const MainCards = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <aside className={styles.sidebar}>
+    <div className={styles.sidebar}>
       <h2 className={styles.title}>Plataformas</h2>
       <div className={styles.cardGrid}>
         {cards.map((card, index) => {
@@ -40,7 +40,7 @@ const MainCards = () => {
           );
         })}
       </div>
-    </aside>
+    </div>
   );
 };
 

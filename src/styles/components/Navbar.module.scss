@@ -88,12 +88,12 @@
       position: static;
       border-top: none;
 
-      opacity: 1 !important; /* O usa más especificidad si prefieres evitar important */
+      opacity: 1 !important;
       max-height: none !important;
       transform: none !important;
       pointer-events: auto;
-      box-shadow: none; /* Quitamos la sombra de la caja flotante */
-      gap: 20px; /* Para que los links no estén pegados uno al otro */
+      box-shadow: none;
+      gap: 20px;
 
       li {
         padding: 0 1rem;

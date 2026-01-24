@@ -9,10 +9,20 @@ export default function Home() {
     <div>
       <SplashScreen />
       <Carousel />
-      <MainCards />
-      <p className={styles.title}>Nuestras historias</p>
-      <InstagramPost url="https://www.instagram.com/reel/DCvCdZWh2S9/"/>
-      <InstagramPost url="https://www.instagram.com/reel/DCpq1_tMu6Q/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="/>
+      
+      <div className={styles.layoutGrid}>
+              
+        <aside className={styles.sidebar}>
+          <MainCards />
+        </aside>
+
+        <section className={styles.feed}>
+          <p className={styles.title}>Nuestras historias</p>
+          <InstagramPost url="https://www.instagram.com/reel/DCvCdZWh2S9/"/>
+          <InstagramPost url="https://www.instagram.com/reel/DCpq1_tMu6Q/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="/>
+        </section>
+
+      </div>
     </div>
   );
 }
