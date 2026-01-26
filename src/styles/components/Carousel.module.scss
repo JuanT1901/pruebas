@@ -1,94 +1,110 @@
 .carouselWrapper {
   position: relative;
   width: 100%;
-  height: 40vh;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: hidden; /* CRUCIAL: Para que la imagen respete los bordes redondeados */
+  background-color: #1a1a1a; /* Fondo oscuro unificado */
 
-  @media (min-width: 768px) {
-    height: 75vh;
-  }
+  /* MÓVIL: Mantenemos el diseño full-width (de borde a borde) */
+  height: 400px; 
+  border-radius: 0; /* En móvil se ve mejor cuadrado completo */
 
+  /* ESCRITORIO: Estilo "Marco Profesional" */
   @media (min-width: 1024px) {
-    height: 90vh;
+    height: 600px; 
+    
+    /* 1. LÍMITE DE ANCHO: Ya no es infinito */
+    max-width: 1000px; /* Puedes ajustar esto a 1100px o 1200px según prefieras */
+    
+    /* 2. CENTRADO Y ESPACIO: */
+    margin: 40px auto; /* 40px arriba/abajo, auto a los lados para centrar */
+    
+    /* 3. ESTÉTICA PROFESIONAL: */
+    border-radius: 24px; /* Bordes redondeados modernos */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); /* Sombra elegante y profunda */
   }
 }
 
 .carousel {
   height: 100%;
+  width: 100%;
 }
 
 .slide {
-  display: flex !important;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  width: 100%;
   height: 100%;
+  overflow: hidden;
+  background-color: #1a1a1a; /* Coincide con el wrapper */
 }
 
 .image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  object-fit: contain; 
+  object-position: center center; 
 }
 
+/* --- FLECHAS (Ajuste para que no se salgan del marco redondeado) --- */
 .arrowLeft,
 .arrowRight {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.7);
-  border: none;
-  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.15); /* Más sutil */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde fino para definición */
+  backdrop-filter: blur(4px); /* Efecto vidrio esmerilado */
+  color: white; 
   cursor: pointer;
-  padding: 0.4rem 0.8rem;
   z-index: 10;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  
+  /* Tamaños */
+  width: 40px; height: 40px; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    color: #000;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Brillo al hover */
+  }
 
   @media (min-width: 768px) {
-    font-size: 2rem;
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
   }
 }
 
-.arrowLeft {
-  left: 8px;
-}
+.arrowLeft { left: 20px; }
+.arrowRight { right: 20px; }
 
-.arrowRight {
-  right: 8px;
-}
-
-.arrowLeft:hover,
-.arrowRight:hover {
-  background: rgba(255, 255, 255, 0.9);
-}
-
+/* --- PUNTOS DE NAVEGACIÓN --- */
 .dots {
   display: flex;
   justify-content: center;
   position: absolute;
-  bottom: 16px;
+  bottom: 24px; /* Un poco más arriba */
   width: 100%;
-  gap: 6px;
+  gap: 10px;
   z-index: 5;
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.3);
   border: none;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &.active {
-    background: #222;
+  &:hover {
+    background: rgba(255, 255, 255, 0.8);
   }
 
-  @media (min-width: 768px) {
-    width: 10px;
-    height: 10px;
+  &.active {
+    background: #fff;
+    transform: scale(1.4); /* Crece más al estar activo */
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
   }
 }

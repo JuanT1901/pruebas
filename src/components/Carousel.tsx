@@ -28,12 +28,11 @@ const Carousel = () => {
     },
   })
 
-  // Autoplay
   const autoplay = () => {
-    clearTimeout(timeout.current!)
+    if (timeout.current) clearTimeout(timeout.current)
     timeout.current = setTimeout(() => {
       instanceRef.current?.next()
-    }, 3000)
+    }, 4000) // Aumenté a 4s para dar más tiempo de ver la foto
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,6 +41,7 @@ const Carousel = () => {
     if (!slider) return
 
     slider.on("slideChanged", autoplay)
+    slider.on("dragStarted", () => clearTimeout(timeout.current!)) // Pausa si el usuario toca
     return () => {
       slider.destroy()
     }
@@ -55,16 +55,17 @@ const Carousel = () => {
             <Image
               src={src}
               alt={`Slide ${index + 1}`}
-              width={800}
-              height={400}
+              fill // CAMBIO CLAVE: Llena el contenedor padre
+              priority={index === 0} // Carga la primera imagen rápido
+              sizes="100vw" // Optimización para Next.js
               className={styles.image}
             />
           </div>
         ))}
       </div>
 
-      <button onClick={() => instanceRef.current?.prev()} className={styles.arrowLeft}>&lt;</button>
-      <button onClick={() => instanceRef.current?.next()} className={styles.arrowRight}>&gt;</button>
+      <button onClick={(e) => { e.stopPropagation(); instanceRef.current?.prev() }} className={styles.arrowLeft}>&lt;</button>
+      <button onClick={(e) => { e.stopPropagation(); instanceRef.current?.next() }} className={styles.arrowRight}>&gt;</button>
 
       <div className={styles.dots}>
         {images.map((_, idx) => (
@@ -80,4 +81,3 @@ const Carousel = () => {
 }
 
 export default Carousel
-
