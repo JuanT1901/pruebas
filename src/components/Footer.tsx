@@ -21,7 +21,7 @@ const Footer = () => {
           <p className={styles.footerTexts}>314 469 8955</p>
         </div>
         <div className={styles.links}>
-          <a href="#quieroserpartedeludoclub">Quiero se parte de Ludo Club</a>
+          <a href="#quieroserpartedeludoclub">Quiero ser parte de Ludo Club</a>
           <a href="#asilovivimos">Así lo vivimos</a>
           <a href="#contacto">Ponte en contacto</a>
           <a href="#plataformas">Plataformas</a>

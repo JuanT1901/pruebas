@@ -1,0 +1,164 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: var(--font-geist-sans);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+
+  .mainTitle {
+    font-size: 2.5rem;
+    color: #3CA0E8;
+    margin-bottom: 20px;
+    font-weight: 800;
+  }
+
+  .introText {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555;
+  }
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+  }
+}
+
+.card {
+  position: relative;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: 1px solid rgba(0,0,0,0.05);
+
+  &:hover {
+    transform: translateY(-10px);
+  }
+}
+
+.stepBlue {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  .icon { color: #1976D2; }
+  h2 { color: #0D47A1; }
+  .pawPrint { color: rgba(25, 118, 210, 0.1); }
+}
+
+.stepOrange {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  .icon { color: #F57C00; }
+  h2 { color: #E65100; }
+  .pawPrint { color: rgba(245, 124, 0, 0.1); }
+}
+
+.stepGreen {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  .icon { color: #388E3C; }
+  h2 { color: #1B5E20; }
+  .pawPrint { color: rgba(56, 142, 60, 0.1); }
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  z-index: 2;
+
+  .icon {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+}
+
+.cardBody {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.item {
+  background: rgba(255,255,255,0.6);
+  padding: 15px;
+  border-radius: 10px;
+  
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #333;
+    font-size: 0.95rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.4;
+  }
+}
+
+.ctaLink {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+  color: #3CA0E8;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: #1976D2;
+    border-bottom-color: #1976D2;
+    transform: translateX(4px);
+  }
+}
+
+.pawPrint {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 180px;
+  height: 180px;
+  z-index: 1;
+  transform: rotate(-20deg);
+  pointer-events: none;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
