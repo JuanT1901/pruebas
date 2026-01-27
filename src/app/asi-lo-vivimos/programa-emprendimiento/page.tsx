@@ -67,7 +67,7 @@ export default function ProgramaEmprendimiento() {
         </p>
 
         <blockquote className={styles.slogan}>
-          "Porque en Aluna, de la idea nace la acción, y de la acción florece el camino."
+          &quot;Porque en Aluna, de la idea nace la acción, y de la acción florece el camino.&quot;
         </blockquote>
 
       </section>
