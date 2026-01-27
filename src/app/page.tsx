@@ -1,10 +1,45 @@
+import React from "react";
+import Link from "next/link";
 import Carousel from "app/components/Carousel";
 import InstagramPost from "app/components/InstagramPost";
 import MainCards from "app/components/MainCards";
 import SplashScreen from "app/components/SplashScreen";
 import styles from "app/styles/components/Page.module.scss"
+import { FaRocket, FaPuzzlePiece, FaGuitar, FaLightbulb, FaArrowRight } from 'react-icons/fa';
 
 export default function Home() {
+
+  const highlights = [
+    {
+      title: "Modelo Pedagógico",
+      text: "Aprendizaje activo, constructivista y centrado en el ser.",
+      icon: <FaPuzzlePiece />,
+      color: "#43A047", 
+      link: "/asi-lo-vivimos/nuestro-modelo"
+    },
+    {
+      title: "Semillas 360",
+      text: "Emprendimiento e innovación desde el aula.",
+      icon: <FaRocket />,
+      color: "#E65100",
+      link: "/asi-lo-vivimos/programa-emprendimiento"
+    },
+    {
+      title: "Más allá del aula",
+      text: "Arte, cultura y deporte para descubrir talentos.",
+      icon: <FaGuitar />,
+      color: "#D81B60",
+      link: "/asi-lo-vivimos/extra-curriculares"
+    },
+    {
+      title: "Nuestra Esencia",
+      text: "Valores y filosofía que guían nuestro camino.",
+      icon: <FaLightbulb />,
+      color: "#3CA0E8",
+      link: "/asi-lo-vivimos/nuestra-filosofia"
+    }
+  ];
+
   return (
     <div>
       <SplashScreen />
@@ -13,6 +48,31 @@ export default function Home() {
       <div className={styles.layoutGrid}>
         
         <MainCards /> 
+
+        <section className={styles.highlightsSection}>
+          <div className={styles.highlightsHeader}>
+            <h2>La Experiencia Aluna</h2>
+            <p>Descubre los pilares que hacen de nuestra educación una aventura única.</p>
+          </div>
+
+          <div className={styles.highlightsGrid}>
+            {highlights.map((item, index) => (
+              <Link key={index} href={item.link} className={styles.cardLink}>
+                <div 
+                  className={styles.highlightCard}
+                  style={{ '--card-color': item.color } as React.CSSProperties}
+                >
+                  <div className={styles.iconCircle}>
+                    {item.icon}
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                  <span className={styles.cardArrow}><FaArrowRight /></span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <section className={styles.feed}>
           <p className={styles.title}>Testimonios</p>

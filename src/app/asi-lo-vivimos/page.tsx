@@ -6,9 +6,9 @@ import {
   FaHistory, 
   FaLightbulb, 
   FaPuzzlePiece, 
-  FaCalendarAlt, 
   FaGuitar, 
-  FaRocket 
+  FaRocket,
+  FaQuestionCircle
 } from 'react-icons/fa';
 
 const sections = [
@@ -17,8 +17,8 @@ const sections = [
     description: "Innovación, liderazgo y creación de proyectos desde el aula.",
     icon: <FaRocket />,
     href: "/asi-lo-vivimos/programa-emprendimiento",
-    isHighlight: true, // ¡Esta es la clave!
-    color: "#E65100"   // Naranja intenso
+    isHighlight: true,
+    color: "#E65100"
   },
   {
     title: "Nuestra Historia",
@@ -42,18 +42,18 @@ const sections = [
     color: "#43A047"
   },
   {
-    title: "Calendario Escolar",
-    description: "Fechas importantes, eventos y cronograma del año lectivo.",
-    icon: <FaCalendarAlt />,
-    href: "/asi-lo-vivimos/calendario-escolar",
-    color: "#5E35B1"
-  },
-  {
     title: "Extra-curriculares",
     description: "Arte, deporte y cultura para complementar la formación.",
     icon: <FaGuitar />,
     href: "/asi-lo-vivimos/extra-curriculares",
     color: "#D81B60"
+  },
+  {
+    title: "Preguntas Frecuentes",
+    description: "Resolvemos dudas sobre nuestra metodología y enfoque.",
+    icon: <FaQuestionCircle />,
+    href: "/asi-lo-vivimos/preguntas-frecuentes",
+    color: "#5E35B1"
   }
 ];
 

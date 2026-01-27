@@ -19,10 +19,10 @@ const Navbar = () => {
         <Link href="/" onClick={closeMenu}>
           <Image
             className={styles.imageContainer}
-            src="/logo.png"
-            width={90}
+            src="/logo.jpeg"
+            width={170}
             height={50}
-            alt="logo ludo club"
+            alt="logo aluna"
           />
         </Link>
         
@@ -34,7 +34,7 @@ const Navbar = () => {
           
           <li>
             <Link href="/quiero-ser-parte" onClick={closeMenu}>
-              Quiero ser parte de Ludo Club
+              Quiero ser parte de Aluna
             </Link>
           </li>
           
@@ -53,8 +53,8 @@ const Navbar = () => {
               <li><Link href="/asi-lo-vivimos/nuestra-historia" onClick={closeMenu}>Nuestra Historia</Link></li>
               <li><Link href="/asi-lo-vivimos/nuestra-filosofia" onClick={closeMenu}>Nuestra Filosofía</Link></li>
               <li><Link href="/asi-lo-vivimos/nuestro-modelo" onClick={closeMenu}>Nuestro Modelo</Link></li>
-              <li><Link href="/asi-lo-vivimos/calendario-escolar" onClick={closeMenu}>Calendario Escolar</Link></li>
               <li><Link href="/asi-lo-vivimos/extra-curriculares" onClick={closeMenu}>Extra-curriculares</Link></li>
+              <li><Link href="/asi-lo-vivimos/preguntas-frecuentes" onClick={closeMenu}>Preguntas Frecuentes</Link></li>
             </ul>
           </li>
 

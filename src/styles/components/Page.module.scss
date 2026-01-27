@@ -64,3 +64,115 @@
     justify-items: center;
   }
 }
+
+.highlightsSection {
+  padding: 60px 20px;
+  background-color: #f8fcfd;
+  margin-bottom: 40px;
+}
+
+.highlightsHeader {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 40px auto;
+
+  h2 {
+    font-size: 2.2rem;
+    color: #333;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: #666;
+  }
+}
+
+.highlightsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.highlightCard {
+  background: white;
+  border-radius: 20px;
+  padding: 30px 20px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(0,0,0,0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid var(--card-color);
+
+  .iconCircle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #fff;
+    color: var(--card-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .cardArrow {
+    font-size: 1rem;
+    color: #ccc;
+    transition: all 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+
+    .iconCircle {
+      background-color: var(--card-color);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .cardArrow {
+      color: var(--card-color);
+      transform: translateX(5px);
+    }
+  }
+}
