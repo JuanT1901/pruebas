@@ -21,7 +21,7 @@ export default function ProgramaEmprendimiento() {
           </div>
 
           <div className={styles.videoWrapper}>
-            <InstagramPost url="https://www.instagram.com/p/DTnKuvjjtVo/" /> 
+            <InstagramPost url="https://www.instagram.com/p/DRfJ8QcERfl/" /> 
           </div>
 
         </div>
