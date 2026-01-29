@@ -1,12 +1,10 @@
 import React from 'react';
 import styles from 'app/styles/ponte-en-contacto/ContactSection.module.scss';
 import { 
-  FaMapMarkerAlt, 
-  FaPhoneAlt, 
+  FaMapMarkerAlt,  
   FaEnvelope, 
   FaClock, 
   FaWhatsapp,
-  FaPaperPlane 
 } from 'react-icons/fa';
 
 export default function PonteEnContacto() {

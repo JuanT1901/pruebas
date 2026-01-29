@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import Carousel from "app/components/Carousel";
 import InstagramPost from "app/components/InstagramPost";
-import MainCards from "app/components/MainCards";
 import SplashScreen from "app/components/SplashScreen";
 import styles from "app/styles/components/Page.module.scss"
 import { FaRocket, FaPuzzlePiece, FaGuitar, FaLightbulb, FaArrowRight } from 'react-icons/fa';
