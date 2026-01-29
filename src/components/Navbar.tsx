@@ -53,7 +53,7 @@ const Navbar = () => {
               <li><Link href="/asi-lo-vivimos/nuestra-historia" onClick={closeMenu}>Nuestra Historia</Link></li>
               <li><Link href="/asi-lo-vivimos/nuestra-filosofia" onClick={closeMenu}>Nuestra Filosofía</Link></li>
               <li><Link href="/asi-lo-vivimos/nuestro-modelo" onClick={closeMenu}>Nuestro Modelo</Link></li>
-              <li><Link href="/asi-lo-vivimos/extra-curriculares" onClick={closeMenu}>Extra-curriculares</Link></li>
+              <li><Link href="/asi-lo-vivimos/extra-curriculares" onClick={closeMenu}>Lineas de profundización</Link></li>
               <li><Link href="/asi-lo-vivimos/preguntas-frecuentes" onClick={closeMenu}>Preguntas Frecuentes</Link></li>
             </ul>
           </li>
@@ -63,11 +63,13 @@ const Navbar = () => {
               Ponte en contacto
             </Link>
           </li>
+          {/*
           <li>
             <Link href="/plataformas" onClick={closeMenu}>
               Plataformas
             </Link>
           </li>
+          */}
           <li>
             <a 
               href="https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=8608" 

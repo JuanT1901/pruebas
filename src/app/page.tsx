@@ -47,7 +47,7 @@ export default function Home() {
       
       <div className={styles.layoutGrid}>
         
-        <MainCards /> 
+        {/*<MainCards /> */}
 
         <section className={styles.highlightsSection}>
           <div className={styles.highlightsHeader}>

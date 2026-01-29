@@ -14,6 +14,13 @@ export default function PreguntasFrecuentes() {
 
       <section className={styles.content}>
         
+        <div className={styles.videoContainer}>
+          <h3 className={styles.videoTitle}>Viviendo la metodología</h3>
+          <div className={styles.videoWrapper}>
+            <InstagramPost url="https://www.instagram.com/p/DTTogvADzK-/" />
+          </div>
+        </div>
+
         <div className={styles.introBox}>
           <div className={styles.iconRow}>
             <FaBrain title="Neuroeducación" />
@@ -27,13 +34,6 @@ export default function PreguntasFrecuentes() {
             <br /><br />
             En un contexto educativo en constante evolución, aclaramos aquí las preguntas más frecuentes para facilitar una comprensión adecuada de cómo y por qué esta metodología potencia el <strong>aprendizaje significativo</strong>.
           </p>
-        </div>
-
-        <div className={styles.videoContainer}>
-          <h3 className={styles.videoTitle}>Viviendo la metodología</h3>
-          <div className={styles.videoWrapper}>
-            <InstagramPost url="https://www.instagram.com/p/DTTogvADzK-/" />
-          </div>
         </div>
 
       </section>

@@ -69,7 +69,7 @@ const Footer = () => {
               <FaMapMarkerAlt className={styles.icon} />
               <div>
                 <strong>Sede Principal:</strong>
-                <p>Carrera 11 # 6 - 63</p>
+                <p>Cr 14 # 5 - 77</p>
               </div>
             </div>
             
@@ -77,7 +77,7 @@ const Footer = () => {
               <FaMapMarkerAlt className={styles.icon} />
               <div>
                 <strong>Sede Preescolar:</strong>
-                <p>Cr 14 # 5 - 77</p>
+                <p>Carrera 11 # 6 - 63</p>
               </div>
             </div>
 
@@ -108,10 +108,10 @@ const Footer = () => {
               <strong>Sábados:</strong><br/>
               8:00 AM - 12:00 PM (Atención Padres)
             </p>
-            
+            {/*}
             <Link href="/plataformas" className={styles.platformButton}>
               Ir a Plataformas
-            </Link>
+            </Link>*/}
           </div>
 
         </div>
