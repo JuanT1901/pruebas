@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
-import { FaArrowLeft, FaSave, FaSpinner, FaCheckCircle, FaUserEdit, FaStar, FaLightbulb, FaCheck, FaClock, FaEdit, FaTrash, FaTimes } from 'react-icons/fa'
+import { FaArrowLeft, FaSave, FaSpinner, FaCheckCircle, FaStar, FaLightbulb, FaCheck, FaClock, FaEdit, FaTrash, FaTimes, FaCalculator } from 'react-icons/fa'
 
 function ContenidoComportamiento() {
   const searchParams = useSearchParams()
@@ -35,6 +35,9 @@ function ContenidoComportamiento() {
 
   const [competencia, setCompetencia] = useState('')
   const [desempeno, setDesempeno] = useState('')
+  
+  // 🌟 EL ESTADO DE LA NOTA
+  const [nota, setNota] = useState<string>('')
   
   const compRef = useRef<HTMLTextAreaElement>(null)
   const desRef = useRef<HTMLTextAreaElement>(null)
@@ -90,6 +93,7 @@ function ContenidoComportamiento() {
       setModoEdicion(true)
       setCompetencia('')
       setDesempeno('')
+      setNota('') 
       
       setTimeout(() => {
         autoResize(compRef.current)
@@ -119,6 +123,7 @@ function ContenidoComportamiento() {
   const prepararEdicion = () => {
     setCompetencia(evaluacionGuardada.competencia)
     setDesempeno(evaluacionGuardada.desempeno)
+    setNota(evaluacionGuardada.score?.toString() || evaluacionGuardada.grade?.toString() || '')
     setModoEdicion(true)
     setTimeout(() => {
       autoResize(compRef.current)
@@ -142,16 +147,32 @@ function ContenidoComportamiento() {
       setModoEdicion(true)
       setCompetencia('')
       setDesempeno('')
+      setNota('')
       setEvaluacionesGlobales(prev => prev.filter(e => e.id !== evaluacionGuardada.id)) 
     }
   }
 
+  // 🌟 CALCULADORA DE ESCALA
+  const calcularEscala = (valor: string) => {
+    const n = parseFloat(valor);
+    if (isNaN(n)) return '-';
+    if (n < 3.0) return 'Iniciado';
+    if (n < 4.0) return 'En proceso';
+    return 'Alcanzado';
+  };
+
   const guardarConvivencia = async () => {
     if (!estudianteActivo) return
     if (!competencia || !desempeno) return alert('Debes llenar tanto la competencia como el desempeño.')
+    
+    const numNota = parseFloat(nota);
+    if (isNaN(numNota) || numNota < 0 || numNota > 5.0) {
+      return alert('Debes ingresar una calificación numérica válida entre 0.0 y 5.0');
+    }
 
     setGuardando(true)
     const { data: { user } } = await supabase.auth.getUser()
+    const escalaCalculada = calcularEscala(nota);
 
     const registro = {
       student_id: estudianteActivo.id,
@@ -159,7 +180,9 @@ function ContenidoComportamiento() {
       course_name: curso,
       period: parseInt(periodo),
       competencia: competencia,
-      desempeno: desempeno
+      desempeno: desempeno,
+      score: numNota,
+      scale: escalaCalculada
     }
 
     const { data, error } = await supabase
@@ -174,7 +197,7 @@ function ContenidoComportamiento() {
       alert('Hubo un error al guardar la convivencia.')
     } else {
       setEvaluacionGuardada(data)
-      setModoEdicion(false) // Cerramos edición y mostramos la tarjeta guardada
+      setModoEdicion(false) 
       setMensajeExito(true)
       setTimeout(() => setMensajeExito(false), 3000)
     }
@@ -185,7 +208,6 @@ function ContenidoComportamiento() {
   return (
     <div style={{ width: '100%', animation: 'fadeIn 0.3s ease-in-out' }}>
       
-      {/* 🌟 VISTA 1: LISTA CON SEMÁFOROS */}
       {vistaActual === 'lista' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <header className={styles.header} style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' }}>
@@ -198,7 +220,6 @@ function ContenidoComportamiento() {
               </h1>
               <p style={{ margin: 0, color: '#92400e', fontWeight: 'bold' }}>Director de {curso}</p>
             </div>
-            {/* El selector de periodo controla la lista entera */}
             <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '2px solid #f59e0b', fontWeight: 'bold', color: '#92400e', outline: 'none', backgroundColor: '#fffbeb' }}>
               <option value="1">1° Periodo</option>
               <option value="2">2° Periodo</option>
@@ -218,24 +239,16 @@ function ContenidoComportamiento() {
               <tbody>
                 {estudiantes.map((est, index) => {
                   const yaEvaluado = evaluacionesGlobales.some(e => e.student_id === est.id)
-                  
                   return (
                     <tr key={est.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
                       <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>{est.full_name}</td>
-                      
-                      {/* 🟢 SEMÁFORO DE ESTADO */}
                       <td style={{ padding: '15px 20px', textAlign: 'center' }}>
                         {yaEvaluado ? (
-                          <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <FaCheck /> Evaluado
-                          </span>
+                          <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FaCheck /> Evaluado</span>
                         ) : (
-                          <span style={{ backgroundColor: '#f1f5f9', color: '#64748b', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <FaClock /> Pendiente
-                          </span>
+                          <span style={{ backgroundColor: '#f1f5f9', color: '#64748b', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FaClock /> Pendiente</span>
                         )}
                       </td>
-
                       <td style={{ padding: '15px 20px', textAlign: 'center' }}>
                         <button 
                           onClick={() => { setEstudianteActivo(est); setVistaActual('formulario'); }}
@@ -253,7 +266,6 @@ function ContenidoComportamiento() {
         </div>
       )}
 
-      {/* 🌟 VISTA 2: FORMULARIO MAESTRO (EDICIÓN E HISTORIAL) */}
       {vistaActual === 'formulario' && estudianteActivo && (
         <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '50px' }}>
           
@@ -271,7 +283,6 @@ function ContenidoComportamiento() {
             </div>
           </header>
 
-          {/* 🌟 ESTADO 1: HISTORIAL GUARDADO (NO EDITANDO) */}
           {!modoEdicion && evaluacionGuardada && (
             <div className={styles.card} style={{ marginBottom: '30px', borderTop: '4px solid #10b981', backgroundColor: '#f0fdf4' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #bbf7d0', paddingBottom: '15px' }}>
@@ -288,6 +299,21 @@ function ContenidoComportamiento() {
                 </div>
               </div>
               
+              <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                <div style={{ flex: 1 }}>
+                  <strong style={{ color: '#166534', display: 'block', marginBottom: '5px' }}>Calificación:</strong>
+                  <p style={{ margin: 0, color: '#334155', backgroundColor: 'white', padding: '15px', borderRadius: '8px', border: '1px solid #bbf7d0', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                    {evaluacionGuardada.score ?? evaluacionGuardada.grade ?? 'N/A'}
+                  </p>
+                </div>
+                <div style={{ flex: 2 }}>
+                  <strong style={{ color: '#166534', display: 'block', marginBottom: '5px' }}>Escala (Boletín):</strong>
+                  <p style={{ margin: 0, backgroundColor: 'white', padding: '15px', borderRadius: '8px', border: '1px solid #bbf7d0', fontWeight: 'bold', textTransform: 'uppercase', color: '#15803d' }}>
+                    {evaluacionGuardada.scale ?? 'N/A'}
+                  </p>
+                </div>
+              </div>
+
               <div style={{ marginBottom: '15px' }}>
                 <strong style={{ color: '#166534', display: 'block', marginBottom: '5px' }}>Competencia:</strong>
                 <p style={{ margin: 0, color: '#334155', backgroundColor: 'white', padding: '15px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>{evaluacionGuardada.competencia}</p>
@@ -299,7 +325,6 @@ function ContenidoComportamiento() {
             </div>
           )}
 
-          {/* 🌟 ESTADO 2: MODO EDICIÓN / INGRESO */}
           {modoEdicion && (
             <>
               <div className={styles.card} style={{ marginBottom: '30px', borderTop: evaluacionGuardada ? '4px solid #f59e0b' : '4px solid #3b82f6' }}>
@@ -315,7 +340,7 @@ function ContenidoComportamiento() {
                         onChange={(e) => seleccionarDelBanco(Number(e.target.value))}
                         style={{ background: 'transparent', border: 'none', color: '#b45309', fontWeight: 'bold', outline: 'none', cursor: 'pointer', maxWidth: '200px', textOverflow: 'ellipsis' }}
                       >
-                        <option value="-1">Reutilizar...</option>
+                        <option value="-1">Reutilizar textos...</option>
                         {bancoConvivencia.map((item, idx) => (
                           <option key={idx} value={idx}>{item.competencia.substring(0, 40)}...</option>
                         ))}
@@ -324,6 +349,32 @@ function ContenidoComportamiento() {
                   )}
                 </div>
                 
+                {/* 🌟 LA SECCIÓN DE LA NOTA */}
+                <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', backgroundColor: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#475569', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FaCalculator color="#3b82f6" /> Calificación Final (0.0 a 5.0)
+                    </label>
+                    <input 
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="5"
+                      value={nota}
+                      onChange={(e) => setNota(e.target.value)}
+                      placeholder="Ej: 4.5"
+                      style={{ width: '100%', padding: '15px', borderRadius: '8px', border: '2px solid #cbd5e1', fontSize: '1.2rem', fontWeight: 'bold', color: '#1e293b' }}
+                    />
+                  </div>
+                  
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold', marginBottom: '5px' }}>Escala en Boletín:</span>
+                    <div style={{ padding: '15px', borderRadius: '8px', backgroundColor: nota === '' ? '#e2e8f0' : '#dcfce7', color: nota === '' ? '#94a3b8' : '#15803d', fontWeight: 'bold', fontSize: '1.1rem', textAlign: 'center', textTransform: 'uppercase' }}>
+                      {calcularEscala(nota)}
+                    </div>
+                  </div>
+                </div>
+
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: 'bold', color: '#475569', marginBottom: '8px' }}>Competencia:</label>
                   <textarea 
@@ -331,7 +382,7 @@ function ContenidoComportamiento() {
                     rows={1}
                     value={competencia}
                     onChange={(e) => { setCompetencia(e.target.value); autoResize(e.target); }}
-                    placeholder="Ej: Se relaciona armónicamente..."
+                    placeholder="Ej: Se relaciona armónicamente con sus compañeros..."
                     style={{ width: '100%', padding: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', fontSize: '1rem', minHeight: '50px' }}
                   />
                 </div>
@@ -343,7 +394,7 @@ function ContenidoComportamiento() {
                     rows={1}
                     value={desempeno}
                     onChange={(e) => { setDesempeno(e.target.value); autoResize(e.target); }}
-                    placeholder="Ej: Demuestra empatía y comparte..."
+                    placeholder="Ej: Demuestra empatía, comparte sus materiales y respeta turnos..."
                     style={{ width: '100%', padding: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', fontSize: '1rem', minHeight: '50px' }}
                   />
                 </div>

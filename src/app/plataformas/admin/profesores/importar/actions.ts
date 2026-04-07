@@ -2,6 +2,29 @@
 
 import { createClient } from '@supabase/supabase-js'
 
+// 🛡️ FORMATEADOR INTELIGENTE DE FECHAS (Traductor de Excel)
+function formatearFecha(valor: any) {
+  if (valor === undefined || valor === null || String(valor).trim() === '') {
+    return null;
+  }
+  
+  // Si Excel envía la fecha como número de serie
+  if (typeof valor === 'number') {
+    const fechaExcel = new Date(Math.round((valor - 25569) * 86400 * 1000));
+    return fechaExcel.toISOString().split('T')[0];
+  }
+  
+  // Si viene como texto o fecha normal
+  try {
+    const d = new Date(valor);
+    if (!isNaN(d.getTime())) {
+      return d.toISOString().split('T')[0];
+    }
+  } catch(e) {}
+  
+  return String(valor).trim();
+}
+
 export async function importarProfesoresMasivo(profesores: any[]) {
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,11 +32,12 @@ export async function importarProfesoresMasivo(profesores: any[]) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
-  let procesados = 0; 
+  let creados = 0; 
+  let actualizados = 0; 
   let asignaciones = 0; 
   let errores = [];
 
-  // 🛡️ FUNCIÓN SANITIZADORA
+  // 🛡️ FUNCIÓN SANITIZADORA BÁSICA (Para textos)
   const limpiarDato = (valor: any) => {
     if (valor === undefined || valor === null || String(valor).trim() === '') {
       return null;
@@ -23,8 +47,7 @@ export async function importarProfesoresMasivo(profesores: any[]) {
 
   for (const filaOriginal of profesores) {
     try {
-      // 🌟 NORMALIZADOR DE ENCABEZADOS (La magia antibugs)
-      // Convierte "Correo electrónico " en "correo electronico"
+      // 🌟 NORMALIZADOR DE ENCABEZADOS
       const fila: any = {};
       for (const key in filaOriginal) {
         const llaveLimpia = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
@@ -33,7 +56,6 @@ export async function importarProfesoresMasivo(profesores: any[]) {
 
       let userId = null;
       
-      // Ahora buscamos en la 'fila' limpia sin tildes ni mayúsculas
       const docString = limpiarDato(fila['documento']);
       const nombre = limpiarDato(fila['nombre completo']) || limpiarDato(fila['nombre']);
       
@@ -43,21 +65,32 @@ export async function importarProfesoresMasivo(profesores: any[]) {
 
       const usuarioAuth = limpiarDato(fila['usuario'])?.toLowerCase() || '';
       
-      // 1. Armamos los datos de RRHH buscando las llaves seguras
-      const datosRRHH = {
-        email: limpiarDato(fila['correo electronico']) || limpiarDato(fila['correo']),
-        birth_date: limpiarDato(fila['fecha de nacimiento']) || limpiarDato(fila['fecha nacimiento']), 
-        address: limpiarDato(fila['direccion']),
-        phone_number: limpiarDato(fila['numero de celular']) || limpiarDato(fila['celular']),
-        compensation_fund: limpiarDato(fila['caja de compensacion']) || limpiarDato(fila['caja compensacion']),
-        eps: limpiarDato(fila['eps']),
-        arl: limpiarDato(fila['arl']),
-        pension_fund: limpiarDato(fila['fondo de pensiones']) || limpiarDato(fila['fondo pensiones']),
-        full_name: nombre,
-        doc_number: docString,
-        doc_type: 'CC',
-        role: 'teacher'
+      // 🌟 CONSTRUCCIÓN DINÁMICA DEL OBJETO DE DATOS (Evita sobrescribir con null)
+      const datosRRHH: any = {};
+      
+      const agregarSiExiste = (llaveBD: string, valorExcel: any) => {
+        if (valorExcel !== null) {
+          datosRRHH[llaveBD] = valorExcel;
+        }
       };
+
+      agregarSiExiste('email', limpiarDato(fila['correo electronico']) || limpiarDato(fila['correo']));
+      
+      // 🌟 APLICAMOS EL TRADUCTOR DE FECHAS AQUÍ
+      const fechaNacimientoRaw = fila['fecha de nacimiento'] || fila['fecha nacimiento'];
+      agregarSiExiste('birth_date', formatearFecha(fechaNacimientoRaw));
+      
+      agregarSiExiste('address', limpiarDato(fila['direccion']));
+      agregarSiExiste('phone_number', limpiarDato(fila['numero de celular']) || limpiarDato(fila['celular']));
+      agregarSiExiste('compensation_fund', limpiarDato(fila['caja de compensacion']) || limpiarDato(fila['caja compensacion']));
+      agregarSiExiste('eps', limpiarDato(fila['eps']));
+      agregarSiExiste('arl', limpiarDato(fila['arl']));
+      agregarSiExiste('pension_fund', limpiarDato(fila['fondo de pensiones']) || limpiarDato(fila['fondo pensiones']));
+      
+      datosRRHH.full_name = nombre;
+      datosRRHH.doc_number = docString;
+      datosRRHH.doc_type = 'CC';
+      datosRRHH.role = 'teacher';
 
       // 2. Buscamos si el profesor YA existe
       const { data: perfilExistente } = await supabaseAdmin
@@ -69,13 +102,15 @@ export async function importarProfesoresMasivo(profesores: any[]) {
       if (perfilExistente) {
         userId = perfilExistente.id;
         
-        // Si ya existe, actualizamos sus datos (Así se llenarán los de la profe que ya creaste)
-        const { error: updateError } = await supabaseAdmin
-          .from('profiles')
-          .update(datosRRHH)
-          .eq('id', userId);
+        if (Object.keys(datosRRHH).length > 0) {
+          const { error: updateError } = await supabaseAdmin
+            .from('profiles')
+            .update(datosRRHH)
+            .eq('id', userId);
 
-        if (updateError) throw new Error(`Error actualizando perfil: ${updateError.message}`);
+          if (updateError) throw new Error(`Error actualizando perfil: ${updateError.message}`);
+          actualizados++;
+        }
       } else {
         // 3. Si no existe, creamos su cuenta
         let emailAuth = usuarioAuth;
@@ -90,7 +125,7 @@ export async function importarProfesoresMasivo(profesores: any[]) {
         if (authError) throw new Error(`Credenciales: ${authError.message}`);
         userId = authData.user.id;
 
-        // 4. Actualizamos el Perfil recién creado por el Trigger con la info de RRHH
+        // 4. Actualizamos el Perfil
         const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
           id: userId,
           ...datosRRHH
@@ -100,7 +135,7 @@ export async function importarProfesoresMasivo(profesores: any[]) {
           await supabaseAdmin.auth.admin.deleteUser(userId);
           throw new Error(`Perfil BD: ${profileError.message}`);
         }
-        procesados++; 
+        creados++; 
       }
 
       // 5. Conectando Curso y Materia Oficial
@@ -154,5 +189,5 @@ export async function importarProfesoresMasivo(profesores: any[]) {
     }
   }
 
-  return { exito: true, procesados, asignaciones, errores };
+  return { exito: true, creados, actualizados, asignaciones, errores };
 }

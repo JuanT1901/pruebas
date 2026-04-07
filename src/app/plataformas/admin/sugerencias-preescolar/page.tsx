@@ -30,7 +30,14 @@ export default function SugerenciasPreescolarPage() {
         .eq('course_name', curso)
       
       if (asignaciones) {
-        const dimensionesUnicas = Array.from(new Set(asignaciones.map((a: any) => a.subject_name)))
+        const dimensionesUnicas = Array.from(new Set(
+          asignaciones.map((a: any) => a.subject_name.split('(')[0].trim())
+        ))
+
+        // 🌟 LA MAGIA: Forzamos a que siempre exista la Dimensión de Comportamiento
+        if (!dimensionesUnicas.includes('Dimensión socio-afectiva')) {
+          dimensionesUnicas.push('Dimensión socio-afectiva')
+        }
         
         setDimensiones(dimensionesUnicas.map(nombre => ({ name: nombre })))
       }
@@ -58,7 +65,6 @@ export default function SugerenciasPreescolarPage() {
   const guardarSugerencias = async () => {
     setGuardando(true)
     
-    // Preparamos el array de registros para guardar o actualizar
     const registros = dimensiones.map(dim => ({
       course_name: curso,
       dimension: dim.name,
@@ -93,21 +99,12 @@ export default function SugerenciasPreescolarPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '15px' }}>
-          <select 
-            value={curso} 
-            onChange={(e) => setCurso(e.target.value)}
-            style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #cbd5e1', fontWeight: 'bold', outline: 'none' }}
-          >
+          <select value={curso} onChange={(e) => setCurso(e.target.value)} style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #cbd5e1', fontWeight: 'bold', outline: 'none' }}>
             <option value="Aventureros">Aventureros</option>
             <option value="Creativos">Creativos</option>
             <option value="Expertos">Expertos</option>
           </select>
-
-          <select 
-            value={periodo} 
-            onChange={(e) => setPeriodo(e.target.value)}
-            style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #3b82f6', fontWeight: 'bold', outline: 'none' }}
-          >
+          <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #3b82f6', fontWeight: 'bold', outline: 'none' }}>
             <option value="1">1° Periodo</option>
             <option value="2">2° Periodo</option>
             <option value="3">3° Periodo</option>
@@ -119,7 +116,6 @@ export default function SugerenciasPreescolarPage() {
         <div style={{ textAlign: 'center', padding: '50px' }}><FaSpinner className="fa-spin" size={40} color="#10b981" /></div>
       ) : (
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-          
           {dimensiones.length === 0 ? (
             <p style={{ color: '#64748b', textAlign: 'center' }}>No hay dimensiones registradas para este curso.</p>
           ) : (
@@ -133,7 +129,7 @@ export default function SugerenciasPreescolarPage() {
                     rows={3}
                     value={sugerencias[dim.name] || ''}
                     onChange={(e) => handleCambioSugerencia(dim.name, e.target.value)}
-                    placeholder={`Escribe la sugerencia para la dimensión ${dim.name}...`}
+                    placeholder={`Escribe la sugerencia para la dimensión ${dim.name.toLowerCase()}...`}
                     style={{ width: '100%', padding: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
                   />
                 </div>
@@ -142,11 +138,7 @@ export default function SugerenciasPreescolarPage() {
           )}
 
           <div style={{ marginTop: '30px', borderTop: '2px solid #f1f5f9', paddingTop: '20px' }}>
-            <button 
-              onClick={guardarSugerencias}
-              disabled={guardando}
-              style={{ width: '100%', backgroundColor: '#10b981', color: 'white', border: 'none', padding: '15px', borderRadius: '8px', fontWeight: 'bold', fontSize: '1.1rem', cursor: guardando ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
-            >
+            <button onClick={guardarSugerencias} disabled={guardando} style={{ width: '100%', backgroundColor: '#10b981', color: 'white', border: 'none', padding: '15px', borderRadius: '8px', fontWeight: 'bold', fontSize: '1.1rem', cursor: guardando ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
               {guardando ? <FaSpinner className="fa-spin" /> : <FaSave />}
               {guardando ? 'Guardando...' : 'Guardar Sugerencias'}
             </button>

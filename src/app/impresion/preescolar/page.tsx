@@ -47,13 +47,13 @@ function ContenidoBoletinPreescolarPDF() {
   const [estudiante, setEstudiante] = useState<any>(null)
   const [evaluaciones, setEvaluaciones] = useState<any[]>([])
   const [director, setDirector] = useState<any>(null)
+  const [sugerenciasGlobales, setSugerenciasGlobales] = useState<Record<string, string>>({});
 
-  // 🛡️ EL ÚNICO USE EFFECT DE ESTE ARCHIVO (CON BARRERA DE SEGURIDAD)
   useEffect(() => {
     if (!estudianteId || !periodo) return
 
     const cargarBoletin = async () => {
-      // 1. Barrera de Seguridad Básica (Estar logueado)
+      // 1. Barrera de Seguridad
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       if (authError || !user) {
         alert("🔒 Acceso Denegado: No tienes autorización para ver este documento.")
@@ -61,35 +61,75 @@ function ContenidoBoletinPreescolarPDF() {
         return
       }
 
-      const { data: perfilUsuario } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+      const { data: perfilUsuario } = await supabase.from('profiles').select('role').eq('id', user.id).single()
 
       if (perfilUsuario?.role === 'teacher' || perfilUsuario?.role === 'student') {
-        alert("🔒 Acceso Denegado: Los profesores solo pueden acceder a sus propias planillas, no a los boletines consolidados.")
+        alert("🔒 Acceso Denegado: Solo administradores pueden generar boletines consolidados.")
         window.location.href = '/plataformas/profesores/dashboard' 
         return
       }
 
-      // 2. Cargar datos si pasó la seguridad
+      // 2. Cargar datos del estudiante
       const { data: estData } = await supabase.from('profiles').select('*').eq('id', estudianteId).single()
       setEstudiante(estData)
 
       if (estData) {
+        // 🌟 3. Cargar Evaluaciones Académicas
         const { data: evalData } = await supabase
           .from('preschool_evaluations')
           .select('*')
           .eq('student_id', estudianteId)
           .eq('period', parseInt(periodo))
         
-        if (evalData) setEvaluaciones(evalData)
+        let evaluacionesCompletas = evalData ? [...evalData] : [];
 
+        // 🌟 4. Cargar Comportamiento y convertirlo en "Dimensión socio-afectiva"
+        const { data: compData } = await supabase
+          .from('behavior_evaluations') 
+          .select('*')
+          .eq('student_id', estudianteId)
+          .eq('period', parseInt(periodo))
+          .maybeSingle()
+
+        if (compData) {
+          evaluacionesCompletas.push({
+            dimension: 'Dimensión socio-afectiva',
+            competencies_data: [
+              {
+                competencia: 'Convivencia escolar y relaciones interpersonales',
+                
+                desempeno: compData.observations || compData.observacion || compData.observaciones || compData.desempeno || 'No se registraron observaciones de comportamiento para este periodo.',
+                
+                nota: compData.score || compData.grade || compData.nota || 0,
+                
+                escala: compData.scale || compData.escala || compData.escala_valorativa || 'Básico'
+              }
+            ]
+          });
+        }
+
+        setEvaluaciones(evaluacionesCompletas);
+
+        // 5. Cargar Director
         const { data: cursoData } = await supabase.from('grades').select('director_id').eq('name', estData.course_name).single()
         if (cursoData?.director_id) {
           const { data: dirData } = await supabase.from('profiles').select('full_name').eq('id', cursoData.director_id).single()
           setDirector(dirData)
+        }
+
+        // 6. Cargar Sugerencias de la Rectora
+        const { data: sugerenciasBd } = await supabase
+          .from('preschool_suggestions')
+          .select('dimension, suggestion_text')
+          .eq('course_name', estData.course_name)
+          .eq('period', parseInt(periodo))
+
+        if (sugerenciasBd) {
+          const mapaSugerencias: Record<string, string> = {};
+          sugerenciasBd.forEach((s) => {
+            mapaSugerencias[s.dimension] = s.suggestion_text;
+          });
+          setSugerenciasGlobales(mapaSugerencias);
         }
       }
       setCargando(false)
@@ -99,13 +139,41 @@ function ContenidoBoletinPreescolarPDF() {
   }, [estudianteId, periodo, supabase])
 
   const obtenerIconoEscala = (textoEscala: string) => {
-    if (textoEscala.includes('iniciado')) return <FaSeedling size={24} color="#b45309" />
-    if (textoEscala.includes('proceso')) return <FaChartLine size={24} color="#1d4ed8" />
-    if (textoEscala.includes('alcanzado')) return <FaTrophy size={24} color="#15803d" />
+    if (!textoEscala) return null;
+    const t = textoEscala.toLowerCase();
+    if (t.includes('iniciado') || t.includes('bajo')) return <FaSeedling size={24} color="#b45309" />
+    if (t.includes('proceso') || t.includes('básico')) return <FaChartLine size={24} color="#1d4ed8" />
+    if (t.includes('alcanzado') || t.includes('alto') || t.includes('superior')) return <FaTrophy size={24} color="#15803d" />
     return null
   }
 
   if (cargando) return <div style={{ textAlign: 'center', marginTop: '100px' }}><FaSpinner className="fa-spin" size={40} color="#3b82f6" /></div>
+
+  // 🌟 AGRUPADOR INTELIGENTE
+  const evaluacionesAgrupadas = evaluaciones.reduce((acc: any[], actual: any) => {
+    const baseName = actual.dimension.split('(')[0].trim();
+    
+    let subMateria = "";
+    if (actual.dimension.includes('(')) {
+      subMateria = actual.dimension.split('(')[1].replace(')', '').trim();
+    }
+
+    const dimensionExistente = acc.find(item => item.baseName === baseName);
+
+    if (dimensionExistente) {
+      dimensionExistente.competencias.push(...(actual.competencies_data || []));
+      if (subMateria && !dimensionExistente.subMaterias.includes(subMateria)) {
+        dimensionExistente.subMaterias.push(subMateria);
+      }
+    } else {
+      acc.push({
+        baseName: baseName,
+        subMaterias: subMateria ? [subMateria] : [],
+        competencias: [...(actual.competencies_data || [])]
+      });
+    }
+    return acc;
+  }, []);
 
   return (
     <div style={{ backgroundColor: '#f1f5f9', minHeight: '100vh', padding: '20px 0' }}>
@@ -121,11 +189,7 @@ function ContenidoBoletinPreescolarPDF() {
         {/* ENCABEZADO */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
           <div style={{ width: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img 
-              src="/logo-ludo.png" 
-              alt="Logo Ludo Club" 
-              style={{ maxWidth: '100%', maxHeight: '85px', objectFit: 'contain' }} 
-            />
+            <img src="/logo-ludo.png" alt="Logo Ludo Club" style={{ maxWidth: '100%', maxHeight: '85px', objectFit: 'contain' }} />
           </div>
           
           <div style={{ flex: 1, textAlign: 'center', padding: '0 15px' }}>
@@ -140,33 +204,19 @@ function ContenidoBoletinPreescolarPDF() {
           </div>
 
           <div style={{ width: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img 
-              src="/logo.jpeg" 
-              alt="Logo Aluna" 
-              style={{ maxWidth: '100%', maxHeight: '85px', objectFit: 'contain' }} 
-            />
+            <img src="/logo.jpeg" alt="Logo Aluna" style={{ maxWidth: '100%', maxHeight: '85px', objectFit: 'contain' }} />
           </div>
         </header>
 
         {/* INFO ESTUDIANTE */}
-        <div style={{ 
-          display: 'flex', 
-          border: '1px solid #cbd5e1', 
-          borderRadius: '10px',        
-          marginBottom: '20px',
-          overflow: 'hidden'           
-        }}>
+        <div style={{ display: 'flex', border: '1px solid #cbd5e1', borderRadius: '10px', marginBottom: '20px', overflow: 'hidden' }}>
           <div style={{ flex: 1, padding: '12px', borderRight: '1px solid #cbd5e1' }}>
             <span style={{ color: '#64748b' }}>ESTUDIANTE:</span> 
-            <strong style={{ textTransform: 'uppercase', marginLeft: '8px', color: '#1e293b' }}>
-              {estudiante?.full_name}
-            </strong>
+            <strong style={{ textTransform: 'uppercase', marginLeft: '8px', color: '#1e293b' }}>{estudiante?.full_name}</strong>
           </div>
           <div style={{ width: '250px', padding: '12px' }}>
             <span style={{ color: '#64748b' }}>NIVEL:</span> 
-            <strong style={{ textTransform: 'uppercase', marginLeft: '8px', color: '#1e293b' }}>
-              {estudiante?.course_name}
-            </strong>
+            <strong style={{ textTransform: 'uppercase', marginLeft: '8px', color: '#1e293b' }}>{estudiante?.course_name}</strong>
           </div>
         </div>
 
@@ -181,28 +231,37 @@ function ContenidoBoletinPreescolarPDF() {
             </tr>
           </thead>
           <tbody>
-            {evaluaciones.map((evalMateria, idxM) => {
-              const comps = evalMateria.competencies_data || []
+            {evaluacionesAgrupadas.map((bloque, idxB) => {
+              const comps = bloque.competencias;
+              const tituloCompleto = bloque.subMaterias.length > 0 
+                ? `${bloque.baseName} (${bloque.subMaterias.join(' / ')})` 
+                : bloque.baseName;
+              
+              const esSocioAfectiva = bloque.baseName.toLowerCase().includes('socio-afectiva');
+
               return (
-                <Fragment key={idxM}>
+                <Fragment key={idxB}>
                   {comps.map((c: any, idxC: number) => (
                     <tr key={idxC} className="salto-pagina">
                       {idxC === 0 && (
-                        <td rowSpan={comps.length} style={{ 
-                          fontWeight: 'bold', 
-                          verticalAlign: 'middle', 
-                          textAlign: 'center'
-                        }}>
-                          {evalMateria.dimension}
+                        <td rowSpan={comps.length} style={{ verticalAlign: 'middle', textAlign: 'center', fontWeight: 'bold', width: '150px' }}>
+                          {tituloCompleto}
                         </td>
                       )}
-                      <td>{c.competencia}</td>
-                      <td>{c.desempeno}</td>
-                      <td style={{ padding: 0 }}>
-                        <div style={{ display: 'flex', height: '100%', minHeight: '60px' }}>
+                      
+                      <td style={{ fontSize: '0.85rem' }}>{c.competencia}</td>
+                      <td style={{ fontSize: '0.8rem' }}>{c.desempeno}</td>
+                      
+                      <td style={{ padding: 0, height: '1px', width: '100px' }}>
+                        <div style={{ display: 'flex', height: '100%' }}>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', borderRight: '1px solid #1e293b', padding: '5px' }}>
-                            <strong style={{ fontSize: '1.2rem' }}>{c.nota?.toFixed(1)}</strong>
-                            <span style={{ fontSize: '0.65rem', textAlign: 'center', lineHeight: '1' }}>{c.escala}</span>
+                            {/* Ocultamos la nota numérica si es Comportamiento */}
+                            {!esSocioAfectiva && (
+                              <strong style={{ fontSize: '1.2rem' }}>{c.nota?.toFixed(1)}</strong>
+                            )}
+                            <span style={{ fontSize: esSocioAfectiva ? '0.75rem' : '0.6rem', textAlign: 'center', lineHeight: '1.1', fontWeight: esSocioAfectiva ? 'bold' : 'normal' }}>
+                              {c.escala}
+                            </span>
                           </div>
                           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5px' }}>
                             {obtenerIconoEscala(c.escala)}
@@ -211,15 +270,15 @@ function ContenidoBoletinPreescolarPDF() {
                       </td>
                     </tr>
                   ))}
-                  {/* SUGERENCIAS */}
+                  
                   <tr className="salto-pagina">
-                    <td colSpan={4} style={{ padding: '12px' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#475569' }}>
+                    <td colSpan={4} style={{ padding: '12px', backgroundColor: '#fdfdfd' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#475569' }}>
                         <strong style={{ textTransform: 'uppercase', color: '#1e293b', display: 'block', marginBottom: '4px' }}>
-                          Sugerencias de la dimensión:
+                          Sugerencias Pedagógicas - {bloque.baseName}:
                         </strong>
                         <p style={{ margin: 0, fontStyle: 'italic', lineHeight: '1.4' }}>
-                          Espacio reservado para las observaciones pedagógicas de la dimensión del periodo.
+                          {sugerenciasGlobales[bloque.baseName] || 'No se han registrado observaciones pedagógicas para esta dimensión en el periodo actual.'}
                         </p>
                       </div>
                     </td>
