@@ -189,5 +189,5 @@ export async function importarProfesoresMasivo(profesores: any[]) {
     }
   }
 
-  return { exito: true, creados, actualizados, asignaciones, errores };
+  return { exito: true, procesados: profesores.length, creados, actualizados, asignaciones, errores };
 }
