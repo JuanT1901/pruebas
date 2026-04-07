@@ -3,12 +3,13 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
 import { FaArrowLeft, FaSave, FaSpinner, FaCheckCircle, FaUserEdit, FaStar, FaLightbulb, FaCheck, FaClock, FaEdit, FaTrash, FaTimes } from 'react-icons/fa'
 
-export default function PlanillaComportamientoPage() {
+function ContenidoComportamiento() {
   const searchParams = useSearchParams()
   const curso = searchParams.get('curso')
 
@@ -17,39 +18,32 @@ export default function PlanillaComportamientoPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // ESTADOS GLOBALES
-  const [periodo, setPeriodo] = useState('1') // 🌟 Movido arriba para controlar toda la vista
+  const [periodo, setPeriodo] = useState('1')
   const [estudiantes, setEstudiantes] = useState<any[]>([])
-  const [evaluacionesGlobales, setEvaluacionesGlobales] = useState<any[]>([]) // Historial del curso
+  const [evaluacionesGlobales, setEvaluacionesGlobales] = useState<any[]>([])
   
   const [cargandoLista, setCargandoLista] = useState(true)
   const [vistaActual, setVistaActual] = useState<'lista' | 'formulario'>('lista')
   const [estudianteActivo, setEstudianteActivo] = useState<any>(null)
 
-  // ESTADOS DEL FORMULARIO
   const [guardando, setGuardando] = useState(false)
   const [mensajeExito, setMensajeExito] = useState(false)
   const [bancoConvivencia, setBancoConvivencia] = useState<any[]>([])
   
   const [evaluacionGuardada, setEvaluacionGuardada] = useState<any>(null)
-  const [modoEdicion, setModoEdicion] = useState(false) // Controla si mostramos el formulario o la tarjeta guardada
+  const [modoEdicion, setModoEdicion] = useState(false)
 
-  // Datos del Formulario
   const [competencia, setCompetencia] = useState('')
   const [desempeno, setDesempeno] = useState('')
   
   const compRef = useRef<HTMLTextAreaElement>(null)
   const desRef = useRef<HTMLTextAreaElement>(null)
 
-  // ==========================================
-  // CARGAR ESTUDIANTES E HISTORIAL DEL CURSO
-  // ==========================================
   useEffect(() => {
     if (!curso) return
     const cargarDatos = async () => {
       setCargandoLista(true)
       
-      // 1. Traer Estudiantes
       const { data: estData } = await supabase
         .from('profiles')
         .select('id, full_name, doc_number')
@@ -59,7 +53,6 @@ export default function PlanillaComportamientoPage() {
       
       if (estData) setEstudiantes(estData)
 
-      // 2. Traer TODAS las evaluaciones de este curso y periodo para los semáforos
       const { data: evalData } = await supabase
         .from('behavior_evaluations')
         .select('*')
@@ -69,7 +62,6 @@ export default function PlanillaComportamientoPage() {
       if (evalData) {
         setEvaluacionesGlobales(evalData)
         
-        // Cargar Banco Inteligente
         const bancoUnico = new Map()
         evalData.forEach(ev => {
           if (ev.competencia && ev.desempeno && !bancoUnico.has(ev.competencia)) {
@@ -85,21 +77,17 @@ export default function PlanillaComportamientoPage() {
     cargarDatos()
   }, [curso, periodo, vistaActual, supabase])
 
-  // ==========================================
-  // LÓGICA AL ENTRAR A UN ESTUDIANTE
-  // ==========================================
   useEffect(() => {
     if (vistaActual !== 'formulario' || !estudianteActivo) return
     
-    // Buscar si este estudiante ya tiene evaluación en el estado global
     const evPrevia = evaluacionesGlobales.find(e => e.student_id === estudianteActivo.id)
 
     if (evPrevia) {
       setEvaluacionGuardada(evPrevia)
-      setModoEdicion(false) // Mostramos la tarjeta de historial, no el formulario
+      setModoEdicion(false)
     } else {
       setEvaluacionGuardada(null)
-      setModoEdicion(true) // Mostramos el formulario vacío
+      setModoEdicion(true)
       setCompetencia('')
       setDesempeno('')
       
@@ -110,9 +98,6 @@ export default function PlanillaComportamientoPage() {
     }
   }, [vistaActual, estudianteActivo, evaluacionesGlobales])
 
-  // ==========================================
-  // FUNCIONES DEL FORMULARIO Y EDICIÓN
-  // ==========================================
   const autoResize = (elemento: HTMLTextAreaElement | null) => {
     if (elemento) {
       elemento.style.height = 'auto'
@@ -157,7 +142,6 @@ export default function PlanillaComportamientoPage() {
       setModoEdicion(true)
       setCompetencia('')
       setDesempeno('')
-      // Actualizamos la lista global para que el semáforo cambie a pendiente
       setEvaluacionesGlobales(prev => prev.filter(e => e.id !== evaluacionGuardada.id)) 
     }
   }
@@ -196,9 +180,6 @@ export default function PlanillaComportamientoPage() {
     }
   }
 
-  // ==========================================
-  // RENDERIZADO
-  // ==========================================
   if (cargandoLista) return <div style={{ textAlign: 'center', marginTop: '50px' }}><FaSpinner className="fa-spin" size={40} color="#f59e0b" /></div>
 
   return (
@@ -398,5 +379,13 @@ export default function PlanillaComportamientoPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function ComportamientoPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '50px' }}>Cargando módulo de comportamiento...</div>}>
+      <ContenidoComportamiento />
+    </Suspense>
   )
 }
