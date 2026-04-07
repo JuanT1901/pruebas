@@ -8,13 +8,11 @@ import CircularsList from './CircularsList'
 export default async function SubirCircularesPage() {
   const supabase = await createClient()
 
-  // 1. Traer los cursos
   const { data: grades } = await supabase
     .from('grades')
     .select('id, name, level')
     .order('order_index', { ascending: true })
 
-  // 2. Traer las circulares ya publicadas (con el nombre de su curso si aplica)
   const { data: circulars } = await supabase
     .from('circulars')
     .select(`

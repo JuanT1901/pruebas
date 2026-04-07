@@ -23,6 +23,10 @@ export default function Footer() {
     return null
   }
 
+  if (pathname.includes('/impresion')) {
+    return null
+  }
+
   return (
     <footer className={styles.footer}>
       

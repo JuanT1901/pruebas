@@ -10,33 +10,28 @@ export default async function AdminLayout({
 }) {
   const supabase = await createClient()
 
-  // 1. Obtener el usuario actual
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')
   }
 
-  // 2. Buscar su perfil para verificar el ROL
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  // 3. LA BARRERA: Si no es admin, se expulsa al dashboard de estudiantes
   if (profile?.role !== 'admin') {
     redirect('/plataformas/estudiantes/dashboard')
   }
 
-  // Si llega hasta aquí, Es la rectora. Le mostramos la interfaz.
   return (
     <div className={styles.dashboardContainer}>
       
-      <AdminSidebar /> {/* <-- Insertamos el menú aquí */}
+      <AdminSidebar />
 
-      {/* Aquí cargarán las páginas hijas (Dashboard, estudiantes, circulares) */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, marginLeft: '260px', width: 'calc(100% - 260px)', overflowY: 'auto' }}>
         {children}
       </div>
       

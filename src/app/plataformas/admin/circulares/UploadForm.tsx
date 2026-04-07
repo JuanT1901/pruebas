@@ -32,23 +32,19 @@ export default function UploadForm({ grades }: { grades: Grade[] }) {
     setMessage(null)
 
     try {
-      // 1. Crear un nombre único para el archivo (evita sobreescribir si se llaman igual)
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
       
-      // 2. Subir el archivo al Storage de Supabase
       const { error: uploadError } = await supabase.storage
         .from('circulars')
         .upload(fileName, file)
 
       if (uploadError) throw uploadError
 
-      // 3. Obtener la URL pública del archivo recién subido
       const { data: { publicUrl } } = supabase.storage
         .from('circulars')
         .getPublicUrl(fileName)
 
-      // 4. Guardar el registro en la tabla 'circulars'
       const { error: dbError } = await supabase
         .from('circulars')
         .insert({
@@ -60,11 +56,9 @@ export default function UploadForm({ grades }: { grades: Grade[] }) {
 
       if (dbError) throw dbError
 
-      // 5. ¡Éxito! Limpiar el formulario
       setMessage({ text: '¡Circular subida y publicada exitosamente!', isError: false })
       setTitle('')
       setFile(null)
-      // Resetear el input file visualmente
       const fileInput = document.getElementById('fileInput') as HTMLInputElement
       if (fileInput) fileInput.value = ''
       router.refresh()
@@ -80,8 +74,6 @@ export default function UploadForm({ grades }: { grades: Grade[] }) {
   return (
     <div className={styles.card} style={{ maxWidth: '600px', margin: '0 auto' }}>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
-        {/* Título */}
         <div>
           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Título de la Circular</label>
           <input 

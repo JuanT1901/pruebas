@@ -12,17 +12,14 @@ export default async function CircularesPage({ params }: PageProps) {
   const resolvedParams = await params;
   const tipo = resolvedParams.tipo 
 
-  // Verificar usuario
   const { data: { user } } = await supabase.auth.getUser()
   
-  // Obtener grado del estudiante
   const { data: profile } = await supabase
     .from('profiles')
     .select('grade_id')
     .eq('id', user?.id)
     .single()
 
-  // Consulta dinámica
   let query = supabase
     .from('circulars')
     .select('*')
@@ -46,7 +43,6 @@ export default async function CircularesPage({ params }: PageProps) {
           <h1>Circulares {tipo === 'general' ? 'Generales' : 'de mi Curso'}</h1>
         </header>
 
-        {/* GRILLA DE CIRCULARES */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
           {circulars && circulars.length > 0 ? (
             circulars.map((circular) => (

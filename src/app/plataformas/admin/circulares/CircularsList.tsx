@@ -22,13 +22,11 @@ export default function CircularsList({ circulars }: { circulars: Circular[] }) 
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleDelete = async (id: number, pdfUrl: string) => {
-    // 1. Confirmación de seguridad
     if (!confirm('¿Estás segura de que deseas borrar esta circular? Esta acción no se puede deshacer.')) return
 
     setDeletingId(id)
 
     try {
-      // 2. Extraer el nombre del archivo de la URL (para borrarlo del Storage)
       const urlParts = pdfUrl.split('/')
       const fileName = urlParts[urlParts.length - 1]
 
@@ -36,12 +34,9 @@ export default function CircularsList({ circulars }: { circulars: Circular[] }) 
         await supabase.storage.from('circulars').remove([fileName])
       }
 
-      // 3. Borrar el registro de la base de datos
       const { error } = await supabase.from('circulars').delete().eq('id', id)
 
       if (error) throw error
-
-      // 4. Refrescar la página para actualizar la tabla
       router.refresh()
 
     } catch (error: any) {

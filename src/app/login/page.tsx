@@ -21,13 +21,11 @@ const handleLogin = async (e: React.FormEvent) => {
     setLoading(true)
     setError(null)
 
-    // Formatear el texto de entrada: Si no tiene @, asumir que es usuario y agregar el dominio
     let finalLoginEmail = email.trim();
     if (!finalLoginEmail.includes('@')) {
       finalLoginEmail = `${finalLoginEmail.replace(/\s+/g, '')}@aluna.edu.co`;
     }
 
-    // 1. Intentar iniciar sesión
     const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
       email: finalLoginEmail,
       password,
@@ -39,16 +37,14 @@ const handleLogin = async (e: React.FormEvent) => {
       return
     }
 
-    // 2. Si el login es exitoso, buscar el rol del usuario en la base de datos
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', authData.user.id)
       .single()
 
-    const role = profile?.role || 'student' // Por defecto lo tratamos como estudiante
+    const role = profile?.role || 'student'
 
-    // 3. Redirigir según el rol
     if (role === 'admin') {
       router.push('/plataformas/admin/dashboard')
     } else if (role === 'teacher') {

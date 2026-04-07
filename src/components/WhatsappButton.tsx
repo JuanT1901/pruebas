@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import styles from 'app/styles/components/WhatsappButton.module.scss';
 import { FaWhatsapp } from 'react-icons/fa';
+import { usePathname } from 'next/navigation'
 
 export default function WhatsappButton() {
   const [showTooltip, setShowTooltip] = useState(false);
-
+  const pathname = usePathname();
+  
   useEffect(() => {
     const showDelay = setTimeout(() => setShowTooltip(true), 3000); 
     const hideDelay = setTimeout(() => setShowTooltip(false), 7000);
@@ -16,6 +18,14 @@ export default function WhatsappButton() {
       clearTimeout(hideDelay);
     };
   }, []);
+
+  if (pathname && pathname.startsWith('/plataformas')) {
+    return null;
+  }
+
+  if (pathname.includes('/impresion')) {
+    return null
+  }
 
   return (
     <div className={styles.container}>

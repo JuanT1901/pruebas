@@ -7,14 +7,12 @@ import styles from 'app/styles/pages/Dashboard.module.scss'
 export default async function Dashboard() {
   const supabase = await createClient()
 
-  // 1. Verificar sesión
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return redirect('/login')
   }
 
-  // 2. Obtener perfil del estudiante y su curso
   const { data } = await supabase
     .from('profiles')
     .select(`
@@ -34,13 +32,9 @@ export default async function Dashboard() {
 
   return (
     <div className={styles.dashboardContainer}>
-      
-      {/* MENÚ LATERAL */}
       <Sidebar />
-
-      {/* CONTENIDO PRINCIPAL (El Saludo) */}
       <main className={styles.mainContent}>
-        
+    
         <header className={styles.header}>
           <div>
             <h1>¡Hola, {nombre}! 👋</h1>
@@ -52,8 +46,7 @@ export default async function Dashboard() {
             <strong>{grado}</strong>
           </div>
         </header>
-
-        {/* Sección de aviso o relleno por ahora */}
+        
         <section className={styles.coursesSection}>
           <h2>Novedades</h2>
           <div className={styles.emptyState}>

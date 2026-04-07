@@ -1,87 +1,163 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server'
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function extraerDatosFicha(est: any) {
+  const ficha: any = {}
+  
+  // Datos principales
+  if (est['Nombre Completo']) ficha.full_name = String(est['Nombre Completo']).trim()
+  if (est['Curso']) ficha.course_name = String(est['Curso']).trim()
+  if (est['Tipo Documento']) ficha.doc_type = String(est['Tipo Documento']).trim()
+  
+  // Datos Personales
+  if (est['Fecha Nacimiento'] !== undefined) ficha.birth_date = String(est['Fecha Nacimiento'])
+  if (est['Ciudad'] !== undefined) ficha.city = String(est['Ciudad'])
+  if (est['Barrio'] !== undefined) ficha.neighborhood = String(est['Barrio'])
+  if (est['Direccion'] !== undefined) ficha.address = String(est['Direccion'])
+  if (est['Expedicion Documento'] !== undefined) ficha.doc_expedition_city = String(est['Expedicion Documento'])
+  if (est['EPS'] !== undefined) ficha.eps = String(est['EPS'])
+  if (est['RH'] !== undefined) ficha.blood_type = String(est['RH'])
+  if (est['Numero Hermanos'] !== undefined) ficha.siblings_count = String(est['Numero Hermanos'])
 
-export async function procesarImportacionMasiva(estudiantes: any[]) {
+  // Datos Madre
+  if (est['Nombre Madre'] !== undefined) ficha.mother_name = String(est['Nombre Madre'])
+  if (est['Documento Madre'] !== undefined) ficha.mother_doc = String(est['Documento Madre'])
+  if (est['Profesion Madre'] !== undefined) ficha.mother_profession = String(est['Profesion Madre'])
+  if (est['Celular Madre'] !== undefined) ficha.mother_cellphone = String(est['Celular Madre'])
+  if (est['Telefono Madre'] !== undefined) ficha.mother_phone = String(est['Telefono Madre'])
+  if (est['Correo Madre'] !== undefined) ficha.mother_email = String(est['Correo Madre'])
+  if (est['Vive con Madre'] !== undefined) ficha.mother_lives_with_student = String(est['Vive con Madre'])
+
+  // Datos Padre
+  if (est['Nombre Padre'] !== undefined) ficha.father_name = String(est['Nombre Padre'])
+  if (est['Documento Padre'] !== undefined) ficha.father_doc = String(est['Documento Padre'])
+  if (est['Profesion Padre'] !== undefined) ficha.father_profession = String(est['Profesion Padre'])
+  if (est['Celular Padre'] !== undefined) ficha.father_cellphone = String(est['Celular Padre'])
+  if (est['Telefono Padre'] !== undefined) ficha.father_phone = String(est['Telefono Padre'])
+  if (est['Correo Padre'] !== undefined) ficha.father_email = String(est['Correo Padre'])
+  if (est['Vive con Padre'] !== undefined) ficha.father_lives_with_student = String(est['Vive con Padre'])
+
+  // Acudiente y Referencia
+  if (est['Nombre Acudiente'] !== undefined) ficha.guardian_name = String(est['Nombre Acudiente'])
+  if (est['Celular Acudiente'] !== undefined) ficha.guardian_cellphone = String(est['Celular Acudiente'])
+  if (est['Nombre Referencia'] !== undefined) ficha.reference_name = String(est['Nombre Referencia'])
+  if (est['Celular Referencia'] !== undefined) ficha.reference_cellphone = String(est['Celular Referencia'])
+
+  // Información Adicional
+  if (est['Jornada Adicional'] !== undefined) ficha.extra_shift = String(est['Jornada Adicional'])
+  if (est['Ruta Escolar'] !== undefined) ficha.school_bus = String(est['Ruta Escolar'])
+  if (est['Direccion Ruta'] !== undefined) ficha.bus_address = String(est['Direccion Ruta'])
+  if (est['Requiere Buzo'] !== undefined) ficha.needs_sweatshirt = String(est['Requiere Buzo'])
+  if (est['Talla Buzo'] !== undefined) ficha.sweatshirt_size = String(est['Talla Buzo'])
+  if (est['Requiere Camiseta'] !== undefined) ficha.needs_tshirt = String(est['Requiere Camiseta'])
+  if (est['Talla Camiseta'] !== undefined) ficha.tshirt_size = String(est['Talla Camiseta'])
+
+  return ficha
+}
+
+export async function importarEstudiantesMasivo(estudiantes: any[]) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
   let creados = 0;
-  let errores = 0;
-  const detallesErrores: string[] = [];
+  let actualizados = 0;
+  let errores = [];
 
-  for (const [index, est] of estudiantes.entries()) {
-    const fila = index + 2; // +2 para compensar que el índice inicia en 0 y la fila 1 son los títulos
-
-    // 1. Limpieza extrema: Quitar espacios invisibles en los nombres de las columnas
-    const estLimpio: any = {};
-    for (const key in est) {
-      if (key) {
-        estLimpio[key.trim()] = est[key];
-      }
-    }
-
-    // 2. Verificar que existan las columnas obligatorias
-    if (!estLimpio.email || !estLimpio.password) {
-      errores++;
-      detallesErrores.push(`Fila ${fila}: Falta la columna 'email' o 'password', o están vacías.`);
-      continue;
-    }
-
+  for (const est of estudiantes) {
     try {
-      // 3. Crear el usuario en el sistema de seguridad (Convirtiendo usuario a correo)
-      let correoFinal = estLimpio.email.trim().toLowerCase();
-      
-      // Función rápida para quitar tildes y cambiar la ñ por n
-      correoFinal = correoFinal
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Quita tildes
-        .replace(/ñ/g, "n");             // Cambia ñ por n
-      
-      // Si no tiene '@', le agregamos el dominio del colegio y quitamos espacios por si acaso
-      if (!correoFinal.includes('@')) {
-        correoFinal = `${correoFinal.replace(/\s+/g, '')}@aluna.edu.co`;
+      const docString = String(est['Documento']).trim();
+      let userId = null;
+
+      let gradeIdOficial = null;
+      const nombreCursoExcel = est['Curso'];
+
+      if (nombreCursoExcel) {
+        const textoBusqueda = String(nombreCursoExcel).trim();
+        
+        const { data: cursoEncontrado } = await supabaseAdmin
+          .from('grades') 
+          .select('id')
+          .ilike('name', textoBusqueda)
+          .single();
+
+        if (cursoEncontrado) {
+          gradeIdOficial = cursoEncontrado.id;
+        }
       }
 
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: correoFinal,
-        password: estLimpio.password,
-        email_confirm: true 
-      })
+      const { data: perfilExistente } = await supabaseAdmin
+        .from('profiles')
+        .select('id, grade_id') 
+        .eq('doc_number', docString)
+        .single();
 
-      if (authError) {
-        errores++;
-        detallesErrores.push(`Fila ${fila} (${estLimpio.email}): Error de seguridad -> ${authError.message}`);
-        continue;
+      if (perfilExistente) {
+        userId = perfilExistente.id;
+        const datosActualizar = extraerDatosFicha(est);
+        
+        if (gradeIdOficial && perfilExistente.grade_id !== gradeIdOficial) {
+          datosActualizar.grade_id = gradeIdOficial;
+        }
+
+        if (Object.keys(datosActualizar).length > 0) {
+          const { error: updateError } = await supabaseAdmin
+            .from('profiles')
+            .update(datosActualizar)
+            .eq('id', userId);
+
+          if (updateError) throw new Error(`Error BD al actualizar: ${updateError.message}`);
+        }
+        actualizados++;
+
+      } else {
+        if (!est['Nombre Completo']) throw new Error('Para crear un estudiante nuevo es obligatorio el "Nombre Completo".');
+
+        const columnaUsuario = Object.keys(est).find(key => key.trim().toLowerCase() === 'usuario');
+        const usuarioExcel = columnaUsuario ? est[columnaUsuario] : null;
+
+        let email = usuarioExcel ? String(usuarioExcel).toLowerCase().trim() : `e${docString}`;
+        if (!email.includes('@')) email = `${email}@aluna.edu.co`;
+        const password = docString;
+
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: email,
+          password: password,
+          email_confirm: true 
+        });
+
+        if (authError) throw new Error(`Error Auth: ${authError.message}`);
+        userId = authData.user.id;
+
+        const datosCompletos = extraerDatosFicha(est);
+        
+        if (gradeIdOficial) {
+          datosCompletos.grade_id = gradeIdOficial;
+        }
+
+        const { error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .upsert({
+            id: userId,
+            role: 'student',
+            doc_number: docString,
+            doc_type: est['Tipo Documento'] || 'TI', 
+            ...datosCompletos 
+          });
+
+        if (profileError) {
+          await supabaseAdmin.auth.admin.deleteUser(userId);
+          throw new Error(`Error BD al crear: ${profileError.message}`);
+        }
+        creados++;
       }
-
-      // 4. Separar credenciales de los datos de la ficha
-      const datosPerfil = { ...estLimpio };
-      delete datosPerfil.email;
-      delete datosPerfil.password;
-
-      // 5. Guardar la ficha en public.profiles
-      const { error: dbError } = await supabaseAdmin.from('profiles').upsert({
-        id: authData.user.id,
-        role: 'student',
-        ...datosPerfil
-      })
-
-      if (dbError) {
-        errores++;
-        detallesErrores.push(`Fila ${fila} (${estLimpio.email}): Error en la base de datos -> ${dbError.message}`);
-        continue;
-      }
-
-      creados++;
-    } catch (err: any) {
-      errores++;
-      detallesErrores.push(`Fila ${fila}: Error inesperado -> ${err.message}`);
+    } catch (error: any) {
+      errores.push(`Error con Documento ${est['Documento']}: ${error.message}`);
     }
   }
 
-  return { creados, errores, detallesErrores }
+  return { exito: true, creados, actualizados, errores };
 }

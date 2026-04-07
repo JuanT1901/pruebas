@@ -1,3 +1,5 @@
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
 :root {
   font-family: var(--font-poppins), sans-serif;
 }
@@ -13,10 +15,6 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   margin: 0 !important;
-}
-
-body {
-  padding-top: 80px;
 }
 
 $mobile: 600px;

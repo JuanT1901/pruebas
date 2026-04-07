@@ -1,85 +1,127 @@
 'use client'
 
-import React from 'react'
+import { useState, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import LogoutButton from 'app/components/LogoutButton'
-import styles from 'app/styles/pages/Dashboard.module.scss'
 import { 
-  FaUsers, 
-  FaUserPlus,
-  FaChalkboardTeacher,
-  FaFileUpload,
-  FaHome
+  FaSignOutAlt, FaUserGraduate, FaChalkboardTeacher, 
+  FaHome, FaChevronDown, FaChevronUp, FaUserPlus, 
+  FaUpload, FaList, FaBullhorn, FaUsersCog, FaFileSignature,
+  FaCommentDots
 } from 'react-icons/fa'
 
 export default function AdminSidebar() {
+  const router = useRouter()
   const pathname = usePathname()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
-  const isActive = (path: string) => pathname === path ? styles.active : ''
+
+  const [menuAbierto, setMenuAbierto] = useState<string>('')
+
+  useEffect(() => {
+    if (pathname?.includes('/estudiantes')) {
+      setMenuAbierto('estudiantes')
+    } else if (pathname?.includes('/profesores')) {
+      setMenuAbierto('profesores')
+    }
+  }, [pathname])
+
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
+
+  const toggleMenu = (menu: string) => {
+    setMenuAbierto(menuAbierto === menu ? '' : menu)
+  }
+
+  const btnStyle = { width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', color: '#f8fafc', background: 'none', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', textAlign: 'left' as const }
+  const linkStyle = { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 15px 10px 40px', color: '#cbd5e1', textDecoration: 'none', fontSize: '0.9rem', borderRadius: '8px', transition: 'all 0.2s' }
 
   return (
-    <aside className={styles.sidebar}>
-      <div className={styles.logoArea}>
-        <h2>Aluna</h2>
-        <span style={{ color: '#e11d48', fontWeight: 'bold' }}>Panel Rectoría</span>
-      </div>
+    <aside style={{ 
+      width: '260px', 
+      backgroundColor: '#0f172a',
+      color: 'white', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100vh',
+      position: 'fixed', 
+      left: 0, 
+      top: 0,
+      boxShadow: '4px 0 15px rgba(0,0,0,0.1)',
+      zIndex: 100
+    }}>
       
-      <nav className={styles.nav}>
-        <Link 
-          href="/plataformas/admin/dashboard" 
-          className={isActive('/plataformas/admin/dashboard')}
-        >
-          <FaHome /> Resumen
-        </Link>
-        
-        {/* --- SECCIÓN ESTUDIANTES --- */}
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '15px', marginLeft: '15px', fontWeight: 'bold' }}>
-          Estudiantes
-        </div>
+      <div style={{ padding: '25px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#38bdf8' }}>Ludo Club</h2>
+        <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', marginTop: '5px' }}>Portal Administrativo</p>
+      </div>
+
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '20px 15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         
         <Link 
-          href="/plataformas/admin/estudiantes" 
-          className={isActive('/plataformas/admin/estudiantes')}
+          href="/plataformas/admin" 
+          style={{ ...btnStyle, justifyContent: 'flex-start', gap: '10px', backgroundColor: pathname === '/plataformas/admin' ? 'rgba(56, 189, 248, 0.1)' : 'transparent', color: pathname === '/plataformas/admin' ? '#38bdf8' : '#f8fafc' }}
         >
-          <FaUsers /> Gestión Estudiantes
+          <FaHome /> Inicio / Dashboard
         </Link>
 
-        <Link 
-          href="/plataformas/admin/estudiantes/importar" 
-          className={isActive('/plataformas/admin/estudiantes/importar')}
-        >
-          <FaUserPlus /> Importación Masiva
-        </Link>
-
-        {/* --- SECCIÓN PROFESORES --- */}
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '15px', marginLeft: '15px', fontWeight: 'bold' }}>
-          Equipo Docente
+        <div>
+          <button 
+            onClick={() => toggleMenu('estudiantes')} 
+            style={{ ...btnStyle, backgroundColor: menuAbierto === 'estudiantes' ? 'rgba(255,255,255,0.05)' : 'transparent' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaUserGraduate color={menuAbierto === 'estudiantes' ? '#38bdf8' : 'white'} /> Estudiantes</div>
+            {menuAbierto === 'estudiantes' ? <FaChevronUp size={12} color="#94a3b8" /> : <FaChevronDown size={12} color="#94a3b8" />}
+          </button>
+          
+          <div style={{ display: menuAbierto === 'estudiantes' ? 'flex' : 'none', flexDirection: 'column', gap: '5px', marginTop: '5px' }}>
+            <Link href="/plataformas/admin/estudiantes" style={{...linkStyle, color: pathname === '/plataformas/admin/estudiantes' ? '#38bdf8' : '#cbd5e1'}}><FaList /> Ver Listado</Link>
+            <Link href="/plataformas/admin/estudiantes/crear" style={{...linkStyle, color: pathname === '/plataformas/admin/estudiantes/crear' ? '#38bdf8' : '#cbd5e1'}}><FaUserPlus /> Crear Manual</Link>
+            <Link href="/plataformas/admin/estudiantes/importar" style={{...linkStyle, color: pathname === '/plataformas/admin/estudiantes/importar' ? '#38bdf8' : '#cbd5e1'}}><FaUpload /> Subir Matriz Excel</Link>
+            <Link href="/plataformas/admin/boletines" style={{...linkStyle, color: pathname === '/plataformas/admin/boletines' ? '#38bdf8' : '#cbd5e1'}}><FaFileSignature /> Boletines</Link>
+            <Link href="/plataformas/admin/sugerencias-preescolar" style={{...linkStyle, color: pathname === '/plataformas/admin/sugerencias-preescolar' ? '#38bdf8' : '#cbd5e1'}}><FaCommentDots /> Sugerencias Preescolar</Link>
+          </div>
         </div>
 
-        <Link 
-          href="/plataformas/admin/profesores" 
-          className={isActive('/plataformas/admin/profesores')}
-        >
-          <FaChalkboardTeacher /> Gestión Profesores
-        </Link>
-
-        {/* --- SECCIÓN DOCUMENTOS --- */}
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '15px', marginLeft: '15px', fontWeight: 'bold' }}>
-          Documentos
+        <div>
+          <button 
+            onClick={() => toggleMenu('profesores')} 
+            style={{ ...btnStyle, backgroundColor: menuAbierto === 'profesores' ? 'rgba(255,255,255,0.05)' : 'transparent' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaChalkboardTeacher color={menuAbierto === 'profesores' ? '#38bdf8' : 'white'} /> Docentes</div>
+            {menuAbierto === 'profesores' ? <FaChevronUp size={12} color="#94a3b8" /> : <FaChevronDown size={12} color="#94a3b8" />}
+          </button>
+          
+          <div style={{ display: menuAbierto === 'profesores' ? 'flex' : 'none', flexDirection: 'column', gap: '5px', marginTop: '5px' }}>
+            <Link href="/plataformas/admin/profesores" style={{...linkStyle, color: pathname === '/plataformas/admin/profesores' ? '#38bdf8' : '#cbd5e1'}}><FaList /> Gestión Docente</Link>
+            <Link href="/plataformas/admin/profesores/crear" style={{...linkStyle, color: pathname === '/plataformas/admin/profesores/crear' ? '#38bdf8' : '#cbd5e1'}}><FaUserPlus /> Contratar Manual</Link>
+            <Link href="/plataformas/admin/profesores/importar" style={{...linkStyle, color: pathname === '/plataformas/admin/profesores/importar' ? '#38bdf8' : '#cbd5e1'}}><FaUpload /> Subir Matriz Académica</Link>
+            <Link href="/plataformas/admin/cursos" style={{...linkStyle, color: pathname === '/plataformas/admin/cursos' ? '#38bdf8' : '#cbd5e1'}}><FaUsersCog /> Directores de curso</Link>
+          </div>
         </div>
 
-        <Link 
-          href="/plataformas/admin/circulares" 
-          className={isActive('/plataformas/admin/circulares')}
-        >
-          <FaFileUpload /> Subir Circulares
-        </Link>
+        <div>
+          <Link href="/plataformas/admin/circulares" style={{...btnStyle, justifyContent: 'flex-start', gap: '10px', backgroundColor: pathname?.includes('/circulares') ? 'rgba(56, 189, 248, 0.1)' : 'transparent', color: pathname?.includes('/circulares') ? '#38bdf8' : '#f8fafc', marginTop: '10px'}}><FaBullhorn /> Gestión de Circulares</Link>
+        </div>
+
       </nav>
 
-      <div className={styles.footerNav}>
-        <LogoutButton />
+      <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)', backgroundColor: '#0f172a' }}>
+        <button 
+          onClick={cerrarSesion}
+          style={{ width: '100%', padding: '12px 15px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '1rem', fontWeight: 'bold' }}
+        >
+          <FaSignOutAlt /> Cerrar Sesión
+        </button>
       </div>
+
     </aside>
   )
 }

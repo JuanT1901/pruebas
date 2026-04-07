@@ -10,7 +10,8 @@ import {
   FaFilePdf, 
   FaChevronDown, 
   FaGlobe, 
-  FaUsers 
+  FaUsers,
+  FaFileSignature
 } from 'react-icons/fa'
 
 export default function Sidebar() {
@@ -63,6 +64,13 @@ export default function Sidebar() {
               <FaUsers /> De mi Curso
             </Link>
           </div>
+
+          <li className={styles.active}>
+          <Link href="/plataformas/estudiantes/boletines">
+            <FaFileSignature /> Mis Boletines
+          </Link>
+        </li>
+
         </details>
 
       </nav>
