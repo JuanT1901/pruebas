@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
@@ -22,7 +23,7 @@ const obtenerInfoEscala = (notaStr: string | number) => {
   return { texto: 'Logro alcanzado', color: '#15803d', bg: '#dcfce7', icon: <FaTrophy size={16} /> }
 }
 
-export default function PlanillaPreescolarContenido() {
+function ContenidoPlanillaPreescolar() {
   const searchParams = useSearchParams()
   
   const curso = searchParams.get('curso')
@@ -476,5 +477,13 @@ export default function PlanillaPreescolarContenido() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function PlanillaPreescolarContenido() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '100px' }}>Cargando planilla...</div>}>
+      <ContenidoPlanillaPreescolar />
+    </Suspense>
   )
 }

@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
@@ -25,7 +26,7 @@ const obtenerEstiloAvanzado = (notaStr: string | number) => {
   return { bg: '#eab308', rotate: 0, show: true } 
 }
 
-export default function PlanillaAvanzadaPage() {
+function ContenidoPlanillaAvanzada() {
   const searchParams = useSearchParams()
   
   const curso = searchParams.get('curso')
@@ -250,7 +251,6 @@ export default function PlanillaAvanzadaPage() {
   return (
     <div style={{ width: '100%', animation: 'fadeIn 0.3s ease-in-out' }}>
       
-      {/* 🌟 VISTA 1: LISTA */}
       {vistaActual === 'lista' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <header className={styles.header} style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' }}>
@@ -485,5 +485,13 @@ export default function PlanillaAvanzadaPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function PlanillaAvanzadaPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '100px' }}>Cargando planilla...</div>}>
+      <ContenidoPlanillaAvanzada />
+    </Suspense>
   )
 }

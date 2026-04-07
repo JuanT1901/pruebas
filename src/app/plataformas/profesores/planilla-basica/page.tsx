@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
@@ -25,7 +26,7 @@ const obtenerInfoEscalaPrimaria = (notaStr: string | number) => {
   return { texto: 'Superior', color: '#ffffff', bg: '#eab308', icon: <FaThumbsUp size={16} color="white" /> } // Amarillo
 }
 
-export default function PlanillaBasicaPage() {
+function ContenidoPlanillaBasica() {
   const searchParams = useSearchParams()
   
   const curso = searchParams.get('curso')
@@ -467,5 +468,13 @@ export default function PlanillaBasicaPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function PlanillaBasicaPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '100px' }}>Cargando planilla...</div>}>
+      <ContenidoPlanillaBasica />
+    </Suspense>
   )
 }

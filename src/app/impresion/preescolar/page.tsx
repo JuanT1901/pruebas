@@ -3,6 +3,7 @@
 
 import { useEffect, useState, Fragment } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FaSpinner, FaPrint, FaSeedling, FaChartLine, FaTrophy } from 'react-icons/fa'
 
@@ -32,7 +33,7 @@ const printStyles = `
   }
 `
 
-export default function BoletinPreescolarPDF() {
+function ContenidoBoletinPreescolarPDF() {
   const searchParams = useSearchParams()
   const estudianteId = searchParams.get('estudiante')
   const periodo = searchParams.get('periodo')
@@ -239,5 +240,13 @@ export default function BoletinPreescolarPDF() {
         </footer>
       </div>
     </div>
+  )
+}
+
+export default function BoletinPreescolarPDF() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '100px' }}>Cargando planilla...</div>}>
+      <ContenidoBoletinPreescolarPDF />
+    </Suspense>
   )
 }
