@@ -14,10 +14,10 @@ import {
 export default function AdminSidebar() {
   const router = useRouter()
   const pathname = usePathname()
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
 
   const [menuAbierto, setMenuAbierto] = useState<string>('')

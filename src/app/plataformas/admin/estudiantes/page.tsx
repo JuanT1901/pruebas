@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
-import { FaUserPlus, FaUserGraduate, FaSpinner, FaSearch, FaEdit, FaTimes, FaSave, FaFilter, FaCheckCircle, FaAddressCard, FaFemale, FaMale, FaUserShield, FaBus, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { FaUserPlus, FaUserGraduate, FaSpinner, FaSearch, FaEdit, FaTimes, FaSave, FaFilter, FaCheckCircle, FaAddressCard, FaFemale, FaMale, FaBus, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 
 export default function EstudiantesPage() {
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   const [estudiantes, setEstudiantes] = useState<any[]>([])
   const [cursos, setCursos] = useState<any[]>([])
@@ -71,6 +71,15 @@ export default function EstudiantesPage() {
     setErrorEdicion(null)
 
     try {
+      // 🌟 CIRUGÍA: Buscamos el ID del curso seleccionado
+      let gradeIdToSave = null;
+      if (estudianteEditando.course_name) {
+        const cursoEncontrado = cursos.find(c => c.name === estudianteEditando.course_name);
+        if (cursoEncontrado) {
+          gradeIdToSave = cursoEncontrado.id;
+        }
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -78,6 +87,7 @@ export default function EstudiantesPage() {
           doc_type: estudianteEditando.doc_type,
           doc_number: estudianteEditando.doc_number,
           course_name: estudianteEditando.course_name,
+          grade_id: gradeIdToSave, // 🌟 AHORA GUARDAMOS EL ID CORRECTO
           birth_date: estudianteEditando.birth_date,
           city: estudianteEditando.city,
           neighborhood: estudianteEditando.neighborhood,
@@ -120,7 +130,7 @@ export default function EstudiantesPage() {
 
       if (error) throw error
 
-      setEstudiantes(estudiantes.map(est => est.id === estudianteEditando.id ? estudianteEditando : est))
+      setEstudiantes(estudiantes.map(est => est.id === estudianteEditando.id ? { ...estudianteEditando, grade_id: gradeIdToSave } : est))
       cerrarModal()
       
       setMensajeExito(true)

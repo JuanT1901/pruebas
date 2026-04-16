@@ -5,6 +5,10 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { FaFilePdf, FaEye, FaEyeSlash, FaSpinner, FaGraduationCap, FaArrowLeft, FaUsers, FaCheckDouble } from 'react-icons/fa'
 
+const CURSOS_PRIMARIA = ['Emprendedores', 'Ingeniosos', 'Transformadores'];
+const CURSOS_PREESCOLAR = ['Aventureros', 'Creativos', 'Expertos']; 
+const CURSOS_BACHILLERATO = ['Innovadores', 'Conquistadores', 'Gnomos', 'Duendes', 'Elfos'];
+
 export default function AdminBoletinesPage() {
   const [vistaActual, setVistaActual] = useState<'cursos' | 'estudiantes'>('cursos')
   const [cursoActivo, setCursoActivo] = useState<string | null>(null)
@@ -12,18 +16,17 @@ export default function AdminBoletinesPage() {
   const [cursos, setCursos] = useState<any[]>([])
   const [estudiantes, setEstudiantes] = useState<any[]>([])
   const [periodo, setPeriodo] = useState('1')
-  const [estadosPublicacion, setEstadosPublicacion] = useState<Record<string, boolean>>({}) // Guardará el estado por student_id
+  const [estadosPublicacion, setEstadosPublicacion] = useState<Record<string, boolean>>({})
   
   const [cargando, setCargando] = useState(true)
   const [procesandoId, setProcesandoId] = useState<string | null>(null)
   const [procesandoLote, setProcesandoLote] = useState(false)
 
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
-  // CARGAR CURSOS AL INICIAR
   useEffect(() => {
     const cargarCursos = async () => {
       setCargando(true)
@@ -34,13 +37,11 @@ export default function AdminBoletinesPage() {
     if (vistaActual === 'cursos') cargarCursos()
   }, [vistaActual, supabase])
 
-  // CARGAR ESTUDIANTES Y SUS ESTADOS AL ENTRAR A UN CURSO O CAMBIAR PERIODO
   useEffect(() => {
     if (vistaActual !== 'estudiantes' || !cursoActivo) return
 
     const cargarEstudiantes = async () => {
       setCargando(true)
-      // 1. Traer lista de estudiantes
       const { data: estData } = await supabase
         .from('profiles')
         .select('id, full_name')
@@ -50,7 +51,6 @@ export default function AdminBoletinesPage() {
 
       if (estData) setEstudiantes(estData)
 
-      // 2. Traer estados de publicación para este periodo
       const { data: pubData } = await supabase
         .from('student_report_status')
         .select('student_id, is_published')
@@ -66,9 +66,6 @@ export default function AdminBoletinesPage() {
     cargarEstudiantes()
   }, [vistaActual, cursoActivo, periodo, supabase])
 
-  // ==========================================
-  // FUNCIONES DE PUBLICACIÓN
-  // ==========================================
   const togglePublicacionIndividual = async (estudianteId: string) => {
     setProcesandoId(estudianteId)
     const estadoActual = estadosPublicacion[estudianteId] || false
@@ -109,12 +106,18 @@ export default function AdminBoletinesPage() {
     setProcesandoLote(false)
   }
 
+  const obtenerRutaBoletin = (curso: string) => {
+  if (CURSOS_PRIMARIA.includes(curso)) return '/impresion/primaria';
+  if (CURSOS_PREESCOLAR.includes(curso)) return '/impresion/preescolar';
+  if (CURSOS_BACHILLERATO.includes(curso)) return '/impresion/bachillerato';
+  return '/404'; 
+  }
+
   if (cargando) return <div style={{ textAlign: 'center', marginTop: '100px' }}><FaSpinner className="fa-spin" size={40} color="#3b82f6" /></div>
 
   return (
     <main style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
       
-      {/* 🌟 VISTA 1: LISTA DE CURSOS */}
       {vistaActual === 'cursos' && (
         <>
           <header style={{ marginBottom: '30px' }}>
@@ -144,7 +147,6 @@ export default function AdminBoletinesPage() {
         </>
       )}
 
-      {/* 🌟 VISTA 2: LISTA DE ESTUDIANTES POR CURSO */}
       {vistaActual === 'estudiantes' && cursoActivo && (
         <>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '15px' }}>
@@ -211,7 +213,7 @@ export default function AdminBoletinesPage() {
                       <td style={{ padding: '15px 20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                           <button 
-                            onClick={() => window.open(`/impresion/preescolar?estudiante=${est.id}&periodo=${periodo}`, '_blank')}
+                            onClick={() => window.open(`${obtenerRutaBoletin(cursoActivo)}?estudiante=${est.id}&periodo=${periodo}`, '_blank')}
                             style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                           >
                             <FaFilePdf /> Previa

@@ -9,10 +9,10 @@ import { toggleEstadoProfesor } from './actions'
 import styles from 'app/styles/pages/Dashboard.module.scss'
 
 export default function AdminProfesoresPage() {
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   // 🌟 ESTADOS DE NAVEGACIÓN
   const [vista, setVista] = useState<'lista' | 'clases' | 'editar'>('lista')

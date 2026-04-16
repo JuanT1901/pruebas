@@ -11,10 +11,10 @@ import { crearEstudianteIndividual } from './actions'
 
 export default function CrearEstudiantePage() {
   const router = useRouter()
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   const [cursos, setCursos] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)

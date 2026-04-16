@@ -13,10 +13,10 @@ function ContenidoComportamiento() {
   const searchParams = useSearchParams()
   const curso = searchParams.get('curso')
 
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   const [periodo, setPeriodo] = useState('1')
   const [estudiantes, setEstudiantes] = useState<any[]>([])

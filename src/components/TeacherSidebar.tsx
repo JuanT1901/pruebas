@@ -4,14 +4,15 @@ import { createBrowserClient } from '@supabase/ssr'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { FaSignOutAlt, FaHome, FaBookOpen } from 'react-icons/fa'
+import { useState} from 'react'
 
 export default function TeacherSidebar() {
   const router = useRouter()
   const pathname = usePathname()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const [supabase] = useState(() => createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  ))
 
   const cerrarSesion = async () => {
     await supabase.auth.signOut()

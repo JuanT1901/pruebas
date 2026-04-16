@@ -14,10 +14,10 @@ export default function AdminCursosPage() {
   const [guardandoId, setGuardandoId] = useState<string | null>(null)
   const [exitoId, setExitoId] = useState<string | null>(null)
 
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   useEffect(() => {
     cargarDatos()

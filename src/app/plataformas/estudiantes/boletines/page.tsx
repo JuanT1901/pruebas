@@ -10,10 +10,10 @@ export default function EstudianteBoletinesPage() {
   const [estados, setEstados] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
 
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   useEffect(() => {
     const cargarDatos = async () => {

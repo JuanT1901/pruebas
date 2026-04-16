@@ -29,10 +29,10 @@ function ContenidoPlanillaPreescolar() {
   const curso = searchParams.get('curso')
   const materia = searchParams.get('materia') 
 
-  const supabase = createBrowserClient(
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   const [periodo, setPeriodo] = useState('1')
   const [estudiantes, setEstudiantes] = useState<any[]>([])
