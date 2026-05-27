@@ -14,22 +14,51 @@ const MAPA_AREAS_RAW: Record<string, string> = {
   'Calculo Mental': 'Matemáticas',
   'Geometria': 'Matemáticas',
   'Estadistica': 'Matemáticas',
+  'Estadisticas': 'Matemáticas',
   'Ciencias Naturales': 'Ciencias Naturales y Educación Ambiental',
+  'Ciencias': 'Ciencias Naturales y Educación Ambiental',
   'Fisica': 'Ciencias Naturales y Educación Ambiental',
   'Quimica': 'Ciencias Naturales y Educación Ambiental',
+  'Pre fisica': 'Ciencias Naturales y Educación Ambiental',
+  'Pre quimica': 'Ciencias Naturales y Educación Ambiental',
+  'Sociales': 'Ciencias Sociales',
+  'Ciencias Sociales': 'Ciencias Sociales',
+  'Historia': 'Ciencias Sociales',
+  'Geografia': 'Ciencias Sociales',
+  'Emprendimiento': 'Ciencias Sociales',
   'Español': 'Humanidades',
   'Lectura critica': 'Humanidades',
   'Produccion textual': 'Humanidades',
   'Ingles': 'Humanidades',
-  'Sociales': 'Ciencias Sociales',
-  'Historia': 'Ciencias Sociales',
-  'Geografia': 'Ciencias Sociales',
-  'Emprendimiento': 'Ciencias Sociales',
   'Sistemas': 'Tecnología e Informática',
+  'Arte': 'Educación Artística y Cultural',
   'Artes': 'Educación Artística y Cultural',
-  'Educacion fisica': 'Educación Artística y Cultural',
+  'Danzas': 'Educación Artística y Cultural',
   'Musica': 'Educación Artística y Cultural',
+  'Educacion fisica': 'Educación Física',
   'Convivencia': 'Comportamiento'
+};
+
+const ORDEN_AREAS = [
+  'Matemáticas',
+  'Ciencias Naturales y Educación Ambiental',
+  'Ciencias Sociales',
+  'Humanidades',
+  'Tecnología e Informática',
+  'Educación Artística y Cultural',
+  'Educación Física',
+  'Comportamiento'
+];
+
+const ORDEN_ASIGNATURAS: Record<string, string[]> = {
+  'Matemáticas': ['matematicas', 'calculo mental', 'geometria', 'estadistica', 'estadisticas'],
+  'Ciencias Naturales y Educación Ambiental': ['ciencias naturales', 'ciencias', 'pre fisica', 'pre quimica', 'fisica', 'quimica'],
+  'Ciencias Sociales': ['sociales', 'ciencias sociales', 'geografia', 'emprendimiento'],
+  'Humanidades': ['espanol', 'ingles'],
+  'Tecnología e Informática': ['sistemas'],
+  'Educación Artística y Cultural': ['artes', 'arte', 'danzas', 'musica'],
+  'Educación Física': ['educacion fisica'],
+  'Comportamiento': ['convivencia']
 };
 
 const normalizar = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -146,6 +175,23 @@ function ContenidoBoletinBachilleratoPDF() {
 
           return acc;
         }, []);
+
+        agrupadoPorArea.sort((a, b) => {
+          const posA = ORDEN_AREAS.indexOf(a.area);
+          const posB = ORDEN_AREAS.indexOf(b.area);
+          return (posA === -1 ? 999 : posA) - (posB === -1 ? 999 : posB);
+        });
+
+        agrupadoPorArea.forEach(grupo => {
+          const ordenAsigs = ORDEN_ASIGNATURAS[grupo.area];
+          if (ordenAsigs) {
+            grupo.asignaturas.sort((a: any, b: any) => {
+              const posA = ordenAsigs.indexOf(normalizar(a.nombre));
+              const posB = ordenAsigs.indexOf(normalizar(b.nombre));
+              return (posA === -1 ? 999 : posA) - (posB === -1 ? 999 : posB);
+            });
+          }
+        });
 
         setEvaluacionesAgrupadas(agrupadoPorArea)
 

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
-import { FaUsers, FaBook, FaSpinner, FaCrown, FaStar, FaChevronDown, FaChevronUp, FaChevronRight } from 'react-icons/fa'
+import { FaUsers, FaBook, FaSpinner, FaCrown, FaStar, FaChevronDown, FaChevronUp, FaChevronRight, FaFilePdf } from 'react-icons/fa'
 import styles from 'app/styles/pages/Dashboard.module.scss'
 
 export default function ProfesorDashboard() {
@@ -107,6 +107,17 @@ export default function ProfesorDashboard() {
                 <FaStar /> Evaluar {curso.name}
               </Link>
             ))}
+          </div>
+
+          <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #fde68a' }}>
+            <Link
+              href="/plataformas/profesores/boletines-director"
+              style={{ backgroundColor: '#3b82f6', color: 'white', textDecoration: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '10px', transition: 'transform 0.2s', boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)' }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <FaFilePdf /> Ver Boletines
+            </Link>
           </div>
         </div>
       )}

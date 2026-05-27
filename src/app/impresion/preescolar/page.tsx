@@ -10,6 +10,20 @@ import { FaSpinner, FaPrint } from 'react-icons/fa'
 // 🌟 LISTA DE CURSOS DE PREESCOLAR (Para el escudo de seguridad)
 const CURSOS_PREESCOLAR = ['Aventureros', 'Creativos', 'Expertos'];
 
+const normalizar = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+
+const ORDEN_DIMENSIONES = [
+  'dimension cognitiva (matematicas)',
+  'dimension cognitiva (conceptos de matematicas)',
+  'dimension cognitiva (ciencias integradas)',
+  'dimension cognitiva (dispositivos basicos de aprendizaje)',
+  'dimension comunicativa (espanol)',
+  'dimension comunicativa (ingles)',
+  'dimension corporal (musica)',
+  'dimension socio-afectiva',
+  'comportamiento'
+];
+
 function ContenidoBoletinPreescolarPDF() {
   const searchParams = useSearchParams()
   const estudianteId = searchParams.get('estudiante')
@@ -72,7 +86,7 @@ function ContenidoBoletinPreescolarPDF() {
 
         if (compData) {
           evaluacionesFinales.push({
-            dimension: 'Dimensión socio-afectiva',
+            dimension: 'Comportamiento',
             competencies_data: [
               {
                 competencia: compData.competencia || 'Convivencia escolar',
@@ -100,7 +114,7 @@ function ContenidoBoletinPreescolarPDF() {
 
         if (sugData) {
           const mapa: Record<string, string> = {}
-          sugData.forEach(s => { mapa[s.dimension] = s.suggestion_text })
+          sugData.forEach(s => { mapa[normalizar(s.dimension)] = s.suggestion_text })
           setSugerenciasGlobales(mapa)
         }
       }
@@ -117,28 +131,33 @@ function ContenidoBoletinPreescolarPDF() {
     return <img src="/logro-iniciado.png" alt="Iniciado" style={{ width: 32, height: 32 }} />;
   }
 
-  const evaluacionesAgrupadas = evaluaciones.reduce((acc: any[], actual: any) => {
-    const baseName = actual.dimension.split('(')[0].trim();
-    let subMateria = "";
-    if (actual.dimension.includes('(')) {
-      subMateria = actual.dimension.split('(')[1].replace(')', '').trim();
+  const evaluacionesProcesadas = evaluaciones.map((ev: any) => {
+    const dimNorm = normalizar(ev.dimension);
+    if (dimNorm.includes('psicomotricidad')) {
+      return { ...ev, dimension: 'Dimensión Cognitiva (Dispositivos básicos de aprendizaje)' };
     }
+    return ev;
+  });
 
-    const existente = acc.find(item => item.baseName === baseName);
+  const evaluacionesAgrupadas = evaluacionesProcesadas.reduce((acc: any[], actual: any) => {
+    const dimension = actual.dimension;
+    const existente = acc.find(item => item.dimension === dimension);
     if (existente) {
       existente.competencias.push(...(actual.competencies_data || []));
-      if (subMateria && !existente.subMaterias.includes(subMateria)) {
-        existente.subMaterias.push(subMateria);
-      }
     } else {
       acc.push({
-        baseName: baseName,
-        subMaterias: subMateria ? [subMateria] : [],
+        dimension: dimension,
         competencias: [...(actual.competencies_data || [])]
       });
     }
     return acc;
   }, []);
+
+  evaluacionesAgrupadas.sort((a, b) => {
+    const posA = ORDEN_DIMENSIONES.indexOf(normalizar(a.dimension));
+    const posB = ORDEN_DIMENSIONES.indexOf(normalizar(b.dimension));
+    return (posA === -1 ? 999 : posA) - (posB === -1 ? 999 : posB);
+  });
 
   const paperDimensions: Record<string, { w: string, h: string, css: string }> = {
     letter: { w: '215.9mm', h: '279.4mm', css: 'letter' }, 
@@ -257,10 +276,11 @@ function ContenidoBoletinPreescolarPDF() {
           <tbody>
             {evaluacionesAgrupadas.map((bloque, idxB) => {
               const comps = bloque.competencias;
-              const esSocioAfectiva = bloque.baseName.toLowerCase().includes('socio-afectiva');
-              const tituloUI = bloque.subMaterias.length > 0 
-                ? `${bloque.baseName} (${bloque.subMaterias.join(' / ')})` 
-                : bloque.baseName;
+              const baseName = bloque.dimension.split('(')[0].trim();
+              const sugerencia = sugerenciasGlobales[normalizar(bloque.dimension)]
+                || sugerenciasGlobales[normalizar(baseName)]
+                || (normalizar(bloque.dimension) === 'comportamiento' ? sugerenciasGlobales[normalizar('Dimensión socio-afectiva')] : null)
+                || 'Sin observaciones para este periodo.';
 
               return (
                 <Fragment key={idxB}>
@@ -282,7 +302,7 @@ function ContenidoBoletinPreescolarPDF() {
                           borderLeft: '1px solid #1e293b',
                           borderRight: '1px solid #1e293b'
                         }}>
-                          {isFirst ? tituloUI : ''}
+                          {isFirst ? bloque.dimension : ''}
                         </td>
                         <td className="td-bordeado" style={{ textAlign: 'justify', padding: '10px 12px' }}>{(c.competencia || "-").toUpperCase()}</td>
                         <td className="td-bordeado" style={{ textAlign: 'justify', padding: '10px 12px' }}>{c.desempeno}</td>
@@ -303,9 +323,9 @@ function ContenidoBoletinPreescolarPDF() {
                   <tr className="salto-pagina">
                     <td colSpan={4} className="td-bordeado" style={{ padding: '10px', backgroundColor: '#f8fafc' }}>
                       <div style={{ fontSize: '0.8rem' }}>
-                        <strong>SUGERENCIAS - {bloque.baseName}:</strong>
+                        <strong>SUGERENCIAS - {bloque.dimension}:</strong>
                         <p style={{ margin: '5px 0 0 0', fontStyle: 'italic', lineHeight: '1.4' }}>
-                          {sugerenciasGlobales[bloque.baseName] || 'Sin observaciones para este periodo.'}
+                          {sugerencia}
                         </p>
                       </div>
                     </td>

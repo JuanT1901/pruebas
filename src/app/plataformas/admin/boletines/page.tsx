@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { FaFilePdf, FaEye, FaEyeSlash, FaSpinner, FaGraduationCap, FaArrowLeft, FaUsers, FaCheckDouble } from 'react-icons/fa'
+import { FaFilePdf, FaEye, FaEyeSlash, FaSpinner, FaGraduationCap, FaArrowLeft, FaUsers, FaCheckDouble, FaEdit, FaBook } from 'react-icons/fa'
 import { togglePublicacion, publicarTodosBoletines } from './actions'
 
 const CURSOS_PRIMARIA = ['Emprendedores', 'Ingeniosos', 'Transformadores'];
@@ -22,6 +22,7 @@ export default function AdminBoletinesPage() {
   const [cargando, setCargando] = useState(true)
   const [procesandoId, setProcesandoId] = useState<string | null>(null)
   const [procesandoLote, setProcesandoLote] = useState(false)
+  const [materiasCurso, setMateriasCurso] = useState<any[]>([])
 
   const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -62,6 +63,21 @@ export default function AdminBoletinesPage() {
       pubData?.forEach(p => { mapaEstados[p.student_id] = p.is_published })
       setEstadosPublicacion(mapaEstados)
 
+      const { data: gradeData } = await supabase
+        .from('grades')
+        .select('id')
+        .eq('name', cursoActivo)
+        .single()
+
+      if (gradeData) {
+        const { data: matsData } = await supabase
+          .from('subjects')
+          .select('id, name')
+          .eq('grade_id', gradeData.id)
+          .order('name')
+        if (matsData) setMateriasCurso(matsData)
+      }
+
       setCargando(false)
     }
     cargarEstudiantes()
@@ -93,10 +109,16 @@ export default function AdminBoletinesPage() {
   }
 
   const obtenerRutaBoletin = (curso: string) => {
-  if (CURSOS_PRIMARIA.includes(curso)) return '/impresion/primaria';
-  if (CURSOS_PREESCOLAR.includes(curso)) return '/impresion/preescolar';
-  if (CURSOS_BACHILLERATO.includes(curso)) return '/impresion/bachillerato';
-  return '/404'; 
+    if (CURSOS_PRIMARIA.includes(curso)) return '/impresion/primaria';
+    if (CURSOS_PREESCOLAR.includes(curso)) return '/impresion/preescolar';
+    if (CURSOS_BACHILLERATO.includes(curso)) return '/impresion/bachillerato';
+    return '/404';
+  }
+
+  const obtenerRutaPlanilla = (curso: string, materia: string) => {
+    if (CURSOS_PREESCOLAR.includes(curso)) return `/plataformas/profesores/calificaciones?curso=${encodeURIComponent(curso)}&materia=${encodeURIComponent(materia)}`;
+    if (CURSOS_PRIMARIA.includes(curso)) return `/plataformas/profesores/planilla-basica?curso=${encodeURIComponent(curso)}&materia=${encodeURIComponent(materia)}`;
+    return `/plataformas/profesores/planilla-avanzada?curso=${encodeURIComponent(curso)}&materia=${encodeURIComponent(materia)}`;
   }
 
   if (cargando) return <div style={{ textAlign: 'center', marginTop: '100px' }}><FaSpinner className="fa-spin" size={40} color="#3b82f6" /></div>
@@ -166,6 +188,33 @@ export default function AdminBoletinesPage() {
               </button>
             </div>
           </header>
+
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px', marginBottom: '20px' }}>
+            <h3 style={{ margin: '0 0 15px 0', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1rem' }}>
+              <FaEdit color="#3b82f6" /> Editar Calificaciones
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {materiasCurso.map(mat => (
+                <button
+                  key={mat.id}
+                  onClick={() => window.open(obtenerRutaPlanilla(cursoActivo, mat.name), '_blank')}
+                  style={{ backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', padding: '8px 16px', borderRadius: '8px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', transition: 'all 0.2s' }}
+                  onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#3b82f6'; e.currentTarget.style.color = 'white' }}
+                  onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.color = '#1e40af' }}
+                >
+                  <FaBook size={12} /> {mat.name}
+                </button>
+              ))}
+              <button
+                onClick={() => window.open(`/plataformas/profesores/comportamiento?curso=${encodeURIComponent(cursoActivo)}`, '_blank')}
+                style={{ backgroundColor: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '8px 16px', borderRadius: '8px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f59e0b'; e.currentTarget.style.color = 'white' }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#fef3c7'; e.currentTarget.style.color = '#b45309' }}
+              >
+                <FaBook size={12} /> Comportamiento
+              </button>
+            </div>
+          </div>
 
           <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>

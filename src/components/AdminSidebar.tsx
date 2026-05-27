@@ -8,7 +8,7 @@ import {
   FaSignOutAlt, FaUserGraduate, FaChalkboardTeacher,
   FaHome, FaChevronDown, FaChevronUp, FaUserPlus,
   FaUpload, FaList, FaBullhorn, FaUsersCog, FaFileSignature,
-  FaCommentDots, FaBook
+  FaCommentDots, FaBook, FaIdCard
 } from 'react-icons/fa'
 
 export default function AdminSidebar() {
@@ -110,6 +110,10 @@ export default function AdminSidebar() {
 
         <div>
           <Link href="/plataformas/admin/circulares" style={{...btnStyle, justifyContent: 'flex-start', gap: '10px', backgroundColor: pathname?.includes('/circulares') ? 'rgba(56, 189, 248, 0.1)' : 'transparent', color: pathname?.includes('/circulares') ? '#38bdf8' : '#f8fafc', marginTop: '10px'}}><FaBullhorn /> Gestión de Circulares</Link>
+        </div>
+
+        <div>
+          <Link href="/plataformas/admin/mis-datos" style={{...btnStyle, justifyContent: 'flex-start', gap: '10px', backgroundColor: pathname?.includes('/mis-datos') ? 'rgba(56, 189, 248, 0.1)' : 'transparent', color: pathname?.includes('/mis-datos') ? '#38bdf8' : '#f8fafc'}}><FaIdCard /> Mis Datos</Link>
         </div>
 
 
