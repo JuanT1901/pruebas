@@ -20,6 +20,16 @@ export async function crearEstudianteIndividual(datos: any) {
 
   const password = datos.doc_number;
 
+  let gradeId = null;
+  if (datos.course_name) {
+    const { data: gradeData } = await supabaseAdmin
+      .from('grades')
+      .select('id')
+      .eq('name', datos.course_name)
+      .single();
+    if (gradeData) gradeId = gradeData.id;
+  }
+
   try {
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email,
@@ -37,6 +47,7 @@ export async function crearEstudianteIndividual(datos: any) {
         id: userId,
         role: 'student',
         course_name: datos.course_name,
+        grade_id: gradeId,
         full_name: datos.full_name,
         birth_date: datos.birth_date,
         city: datos.city,

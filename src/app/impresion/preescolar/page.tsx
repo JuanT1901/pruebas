@@ -109,7 +109,6 @@ function ContenidoBoletinPreescolarPDF() {
         const { data: sugData } = await supabase
           .from('preschool_suggestions')
           .select('dimension, suggestion_text')
-          .eq('course_name', estData.course_name)
           .eq('period', parseInt(periodo))
 
         if (sugData) {
@@ -277,10 +276,17 @@ function ContenidoBoletinPreescolarPDF() {
             {evaluacionesAgrupadas.map((bloque, idxB) => {
               const comps = bloque.competencias;
               const baseName = bloque.dimension.split('(')[0].trim();
-              const sugerencia = sugerenciasGlobales[normalizar(bloque.dimension)]
-                || sugerenciasGlobales[normalizar(baseName)]
-                || (normalizar(bloque.dimension) === 'comportamiento' ? sugerenciasGlobales[normalizar('Dimensión socio-afectiva')] : null)
-                || 'Sin observaciones para este periodo.';
+
+              const esUltimoDelGrupo = !evaluacionesAgrupadas.slice(idxB + 1).some(
+                b => b.dimension.split('(')[0].trim() === baseName
+              );
+
+              const sugerencia = esUltimoDelGrupo
+                ? (sugerenciasGlobales[normalizar(bloque.dimension)]
+                  || sugerenciasGlobales[normalizar(baseName)]
+                  || (normalizar(bloque.dimension) === 'comportamiento' ? sugerenciasGlobales[normalizar('Dimensión socio-afectiva')] : null)
+                  || 'Sin observaciones para este periodo.')
+                : null;
 
               return (
                 <Fragment key={idxB}>
@@ -293,9 +299,9 @@ function ContenidoBoletinPreescolarPDF() {
 
                     return (
                       <tr key={idxC} className="salto-pagina">
-                        <td style={{ 
-                          verticalAlign: 'middle', 
-                          textAlign: 'justify', 
+                        <td style={{
+                          verticalAlign: 'middle',
+                          textAlign: 'justify',
                           fontWeight: 'bold',
                           borderTop: bordeSup,
                           borderBottom: bordeInf,
@@ -319,17 +325,19 @@ function ContenidoBoletinPreescolarPDF() {
                       </tr>
                     )
                   })}
-                  
-                  <tr className="salto-pagina">
-                    <td colSpan={4} className="td-bordeado" style={{ padding: '10px', backgroundColor: '#f8fafc' }}>
-                      <div style={{ fontSize: '0.8rem' }}>
-                        <strong>SUGERENCIAS - {bloque.dimension}:</strong>
-                        <p style={{ margin: '5px 0 0 0', fontStyle: 'italic', lineHeight: '1.4' }}>
-                          {sugerencia}
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
+
+                  {sugerencia && (
+                    <tr className="salto-pagina">
+                      <td colSpan={4} className="td-bordeado" style={{ padding: '10px', backgroundColor: '#f8fafc' }}>
+                        <div style={{ fontSize: '0.8rem' }}>
+                          <strong>SUGERENCIAS - {baseName}:</strong>
+                          <p style={{ margin: '5px 0 0 0', fontStyle: 'italic', lineHeight: '1.4' }}>
+                            {sugerencia}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </Fragment>
               )
             })}

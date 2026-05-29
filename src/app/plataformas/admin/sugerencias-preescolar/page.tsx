@@ -7,11 +7,10 @@ import { FaSpinner, FaSave, FaCheckCircle, FaSeedling } from 'react-icons/fa'
 import { guardarSugerenciasPreescolar } from './actions'
 
 export default function SugerenciasPreescolarPage() {
-  const [curso, setCurso] = useState('Aventureros')
   const [periodo, setPeriodo] = useState('1')
   const [dimensiones, setDimensiones] = useState<any[]>([])
   const [sugerencias, setSugerencias] = useState<Record<string, string>>({})
-  
+
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [mensajeExito, setMensajeExito] = useState(false)
@@ -24,29 +23,27 @@ export default function SugerenciasPreescolarPage() {
   useEffect(() => {
     const cargarDatos = async () => {
       setCargando(true)
-      
+
       const { data: asignaciones } = await supabase
         .from('teacher_assignments')
         .select('subject_name')
-        .eq('course_name', curso)
-      
+        .in('course_name', ['Aventureros', 'Creativos', 'Expertos'])
+
       if (asignaciones) {
         const dimensionesUnicas = Array.from(new Set(
           asignaciones.map((a: any) => a.subject_name.split('(')[0].trim())
         ))
 
-        // 🌟 LA MAGIA: Forzamos a que siempre exista la Dimensión de Comportamiento
         if (!dimensionesUnicas.includes('Dimensión socio-afectiva')) {
           dimensionesUnicas.push('Dimensión socio-afectiva')
         }
-        
+
         setDimensiones(dimensionesUnicas.map(nombre => ({ name: nombre })))
       }
 
       const { data: sugData } = await supabase
         .from('preschool_suggestions')
         .select('dimension, suggestion_text')
-        .eq('course_name', curso)
         .eq('period', parseInt(periodo))
 
       const mapaSugerencias: Record<string, string> = {}
@@ -57,7 +54,7 @@ export default function SugerenciasPreescolarPage() {
     }
 
     cargarDatos()
-  }, [curso, periodo, supabase])
+  }, [periodo, supabase])
 
   const handleCambioSugerencia = (dimension: string, texto: string) => {
     setSugerencias(prev => ({ ...prev, [dimension]: texto }))
@@ -67,7 +64,6 @@ export default function SugerenciasPreescolarPage() {
     setGuardando(true)
 
     const registros = dimensiones.map(dim => ({
-      course_name: curso,
       dimension: dim.name,
       period: parseInt(periodo),
       suggestion_text: sugerencias[dim.name] || ''
@@ -96,18 +92,11 @@ export default function SugerenciasPreescolarPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <select value={curso} onChange={(e) => setCurso(e.target.value)} style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #cbd5e1', fontWeight: 'bold', outline: 'none' }}>
-            <option value="Aventureros">Aventureros</option>
-            <option value="Creativos">Creativos</option>
-            <option value="Expertos">Expertos</option>
-          </select>
-          <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #3b82f6', fontWeight: 'bold', outline: 'none' }}>
-            <option value="1">1° Periodo</option>
-            <option value="2">2° Periodo</option>
-            <option value="3">3° Periodo</option>
-          </select>
-        </div>
+        <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: '10px 15px', borderRadius: '8px', border: '2px solid #3b82f6', fontWeight: 'bold', outline: 'none' }}>
+          <option value="1">1° Periodo</option>
+          <option value="2">2° Periodo</option>
+          <option value="3">3° Periodo</option>
+        </select>
       </header>
 
       {cargando ? (

@@ -165,7 +165,7 @@ function ContenidoBoletinBachilleratoPDF() {
             const n = parseFloat(c.nota || c.Nota || 0);
             if (n > 0) { suma += n; validas++; }
           });
-          const promedio = validas > 0 ? suma / validas : 0;
+          const promedio = validas > 0 ? Math.round((suma / validas) * 10) / 10 : 0;
 
           areaExistente.asignaturas.push({
             nombre: actual.subject_name,
