@@ -9,6 +9,32 @@ const supabaseAdmin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
+export async function obtenerEmailAuth(userId: string) {
+  const { autorizado, error: authError } = await verificarRol('admin')
+  if (!autorizado) return { exito: false, error: authError, email: null }
+
+  try {
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId)
+    if (error) return { exito: false, error: error.message, email: null }
+    return { exito: true, email: data.user.email }
+  } catch (error: any) {
+    return { exito: false, error: error.message, email: null }
+  }
+}
+
+export async function actualizarEmailProfesor(userId: string, nuevoEmail: string) {
+  const { autorizado, error: authError } = await verificarRol('admin')
+  if (!autorizado) return { exito: false, error: authError }
+
+  try {
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { email: nuevoEmail })
+    if (error) return { exito: false, error: error.message }
+    return { exito: true }
+  } catch (error: any) {
+    return { exito: false, error: error.message }
+  }
+}
+
 export async function toggleEstadoProfesor(userId: string, nuevoEstado: boolean) {
   const { autorizado, error: authError } = await verificarRol('admin')
   if (!autorizado) return { exito: false, error: authError }

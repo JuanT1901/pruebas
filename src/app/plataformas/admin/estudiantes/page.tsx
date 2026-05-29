@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
-import { FaUserPlus, FaUserGraduate, FaSpinner, FaSearch, FaEdit, FaTimes, FaSave, FaFilter, FaCheckCircle, FaAddressCard, FaFemale, FaMale, FaBus, FaChevronDown, FaChevronUp } from 'react-icons/fa'
-import { actualizarEstudiante } from './actions'
+import { FaUserPlus, FaUserGraduate, FaSpinner, FaSearch, FaEdit, FaTimes, FaSave, FaFilter, FaCheckCircle, FaAddressCard, FaFemale, FaMale, FaBus, FaChevronDown, FaChevronUp, FaKey } from 'react-icons/fa'
+import { actualizarEstudiante, obtenerEmailAuth, actualizarCredencialesEstudiante } from './actions'
 
 export default function EstudiantesPage() {
   const [supabase] = useState(() => createBrowserClient(
@@ -28,6 +28,13 @@ export default function EstudiantesPage() {
   
   const [seccionAbierta, setSeccionAbierta] = useState<string>('academicos')
 
+  const [emailAuth, setEmailAuth] = useState<string | null>(null)
+  const [nuevoEmailAuth, setNuevoEmailAuth] = useState('')
+  const [nuevaContrasenaAuth, setNuevaContrasenaAuth] = useState('')
+  const [guardandoCredenciales, setGuardandoCredenciales] = useState(false)
+  const [errorCredenciales, setErrorCredenciales] = useState<string | null>(null)
+  const [exitoCredenciales, setExitoCredenciales] = useState(false)
+
   useEffect(() => {
     cargarDatos()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,14 +54,26 @@ export default function EstudiantesPage() {
     }
   }
 
-  const abrirModalEdicion = (estudiante: any) => {
+  const abrirModalEdicion = async (estudiante: any) => {
     setEstudianteEditando({ ...estudiante })
     setSeccionAbierta('academicos')
     setErrorEdicion(null)
+    setEmailAuth(null)
+    setNuevoEmailAuth('')
+    setNuevaContrasenaAuth('')
+    setErrorCredenciales(null)
+    setExitoCredenciales(false)
+
+    const res = await obtenerEmailAuth(estudiante.id)
+    if (res.exito) setEmailAuth(res.email ?? null)
   }
 
   const cerrarModal = () => {
     setEstudianteEditando(null)
+    setEmailAuth(null)
+    setNuevoEmailAuth('')
+    setNuevaContrasenaAuth('')
+    setErrorCredenciales(null)
   }
 
   const manejarCambioInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -143,6 +162,37 @@ export default function EstudiantesPage() {
     const coincideCurso = filtroCurso === '' || est.course_name === filtroCurso
     return coincideTexto && coincideCurso
   })
+
+  const guardarCredenciales = async () => {
+    if (!nuevoEmailAuth && !nuevaContrasenaAuth) return
+    setGuardandoCredenciales(true)
+    setErrorCredenciales(null)
+    setExitoCredenciales(false)
+
+    try {
+      let emailFinal = nuevoEmailAuth.trim().toLowerCase()
+      if (emailFinal && !emailFinal.includes('@')) {
+        emailFinal = `${emailFinal}@aluna.edu.co`
+      }
+
+      const resultado = await actualizarCredencialesEstudiante(estudianteEditando.id, {
+        email: emailFinal || undefined,
+        password: nuevaContrasenaAuth || undefined
+      })
+
+      if (!resultado.exito) throw new Error(resultado.error)
+
+      if (emailFinal) setEmailAuth(emailFinal)
+      setNuevoEmailAuth('')
+      setNuevaContrasenaAuth('')
+      setExitoCredenciales(true)
+      setTimeout(() => setExitoCredenciales(false), 3000)
+    } catch (error: any) {
+      setErrorCredenciales(error.message)
+    } finally {
+      setGuardandoCredenciales(false)
+    }
+  }
 
   const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '0.9rem' }
   const labelStyle = { display: 'block', fontWeight: 'bold', marginBottom: '5px', color: '#475569', fontSize: '0.85rem' }
@@ -299,6 +349,48 @@ export default function EstudiantesPage() {
                 {guardandoCambios ? 'Actualizando Ficha...' : 'Guardar Actualización'}
               </button>
             </form>
+
+            <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '2px dashed #e2e8f0' }}>
+              <div onClick={() => toggleSeccion('acceso')} style={{...accordionHeaderStyle, backgroundColor: '#fef2f2', border: '1px solid #fca5a5', marginBottom: seccionAbierta === 'acceso' ? '0' : '15px', borderRadius: seccionAbierta === 'acceso' ? '8px 8px 0 0' : '8px'}}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaKey color="#ef4444" /> 5. Datos de Acceso al Sistema</span>
+                {seccionAbierta === 'acceso' ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
+              {seccionAbierta === 'acceso' && (
+                <div style={{...accordionBodyStyle, backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderTop: 'none'}}>
+                  <p style={{ color: '#7f1d1d', fontSize: '0.85rem', marginTop: 0, marginBottom: '20px' }}>
+                    Estos datos controlan el acceso del estudiante a la plataforma. Modifica solo si es necesario.
+                  </p>
+
+                  {errorCredenciales && <div style={{ backgroundColor: '#fff', color: '#991b1b', padding: '12px', borderRadius: '8px', borderLeft: '4px solid #ef4444', marginBottom: '15px', fontSize: '0.9rem' }}>{errorCredenciales}</div>}
+                  {exitoCredenciales && <div style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '12px', borderRadius: '8px', borderLeft: '4px solid #22c55e', marginBottom: '15px', fontSize: '0.9rem' }}>Credenciales actualizadas con éxito.</div>}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={labelStyle}>Correo de acceso actual</label>
+                      <input type="text" value={emailAuth || 'Cargando...'} disabled style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#64748b' }} />
+                    </div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={labelStyle}>Nuevo correo de acceso</label>
+                      <input type="text" value={nuevoEmailAuth} onChange={(e) => setNuevoEmailAuth(e.target.value)} placeholder="Usuario o correo completo (se agrega @aluna.edu.co si no tiene @)" style={inputStyle} />
+                    </div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={labelStyle}>Nueva contraseña</label>
+                      <input type="text" value={nuevaContrasenaAuth} onChange={(e) => setNuevaContrasenaAuth(e.target.value)} placeholder="Dejar vacío para no cambiar (mín. 8 caracteres)" style={inputStyle} />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={guardarCredenciales}
+                    disabled={guardandoCredenciales || (!nuevoEmailAuth && !nuevaContrasenaAuth)}
+                    style={{ marginTop: '15px', width: '100%', backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: (guardandoCredenciales || (!nuevoEmailAuth && !nuevaContrasenaAuth)) ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
+                  >
+                    {guardandoCredenciales ? <FaSpinner className="fa-spin" /> : <FaKey />}
+                    {guardandoCredenciales ? 'Actualizando...' : 'Actualizar Acceso'}
+                  </button>
+                </div>
+              )}
+            </div>
 
           </div>
         </div>

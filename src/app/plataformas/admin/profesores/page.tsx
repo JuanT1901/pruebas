@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
-import { cambiarContrasenaProfesor, toggleEstadoProfesor, actualizarPerfilProfesor, asignarClaseProfesor, eliminarClaseProfesor } from './actions'
+import { cambiarContrasenaProfesor, toggleEstadoProfesor, actualizarPerfilProfesor, asignarClaseProfesor, eliminarClaseProfesor, obtenerEmailAuth, actualizarEmailProfesor } from './actions'
 import styles from 'app/styles/pages/Dashboard.module.scss'
 import { FaChalkboardTeacher, FaBook, FaSpinner, 
          FaUpload, FaArrowLeft, FaEdit, FaList, 
@@ -34,6 +34,10 @@ export default function AdminProfesoresPage() {
 
   const [nuevaContrasena, setNuevaContrasena] = useState('')
   const [cambiandoClave, setCambiandoClave] = useState(false)
+
+  const [emailAuth, setEmailAuth] = useState<string | null>(null)
+  const [nuevoEmailAuth, setNuevoEmailAuth] = useState('')
+  const [cambiandoEmail, setCambiandoEmail] = useState(false)
 
   const [editData, setEditData] = useState({
     full_name: '',
@@ -172,7 +176,7 @@ export default function AdminProfesoresPage() {
     }
   }
 
-  const abrirEdicion = (profe: any) => {
+  const abrirEdicion = async (profe: any) => {
     setProfeActivo(profe)
     setEditData({
       full_name: profe.full_name || '',
@@ -186,7 +190,13 @@ export default function AdminProfesoresPage() {
       arl: profe.arl || '',
       pension_fund: profe.pension_fund || ''
     })
+    setEmailAuth(null)
+    setNuevoEmailAuth('')
+    setNuevaContrasena('')
     setVista('editar')
+
+    const res = await obtenerEmailAuth(profe.id)
+    if (res.exito) setEmailAuth(res.email ?? null)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -206,6 +216,25 @@ export default function AdminProfesoresPage() {
       setVista('lista')
       cargarProfesores()
     }
+  }
+
+  const ejecutarCambioEmail = async () => {
+    if (!nuevoEmailAuth.trim()) return alert('Debes escribir un correo nuevo.')
+    if (!confirm(`¿Estás seguro de cambiar el correo de acceso de ${profeActivo.full_name}?`)) return
+
+    setCambiandoEmail(true)
+    let emailFinal = nuevoEmailAuth.trim().toLowerCase()
+    if (!emailFinal.includes('@')) emailFinal = `${emailFinal}@aluna.edu.co`
+
+    const resultado = await actualizarEmailProfesor(profeActivo.id, emailFinal)
+    if (resultado.exito) {
+      alert('Correo de acceso actualizado con éxito.')
+      setEmailAuth(emailFinal)
+      setNuevoEmailAuth('')
+    } else {
+      alert(`Error al cambiar correo: ${resultado.error}`)
+    }
+    setCambiandoEmail(false)
   }
 
   const ejecutarCambioClave = async () => {
@@ -492,27 +521,55 @@ export default function AdminProfesoresPage() {
 
             <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '2px dashed #e2e8f0', backgroundColor: '#fef2f2', padding: '20px', borderRadius: '8px', border: '1px solid #fca5a5' }}>
               <h3 style={{ margin: '0 0 10px 0', color: '#991b1b', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <FaKey /> Zona de Seguridad: Restablecer Acceso
+                <FaKey /> Zona de Seguridad: Datos de Acceso
               </h3>
-              <p style={{ color: '#7f1d1d', fontSize: '0.9rem', marginBottom: '15px' }}>
-                Usa esta función solo si el profesor ha olvidado su contraseña o por solicitud administrativa. Escribe una nueva clave (mín. 8 caracteres).
+              <p style={{ color: '#7f1d1d', fontSize: '0.9rem', marginBottom: '20px' }}>
+                Modifica el correo de acceso o restablece la contraseña del docente. Usa estas funciones solo por solicitud administrativa.
               </p>
-              
-              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                <input 
-                  type="text" 
-                  placeholder="Escriba la nueva contraseña..." 
-                  value={nuevaContrasena} 
-                  onChange={(e) => setNuevaContrasena(e.target.value)}
-                  style={{ flex: 1, padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', fontWeight: 'bold' }}
-                />
-                <button 
-                  onClick={ejecutarCambioClave}
-                  disabled={cambiandoClave || !nuevaContrasena}
-                  style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: (cambiandoClave || !nuevaContrasena) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#991b1b', fontSize: '0.9rem' }}>Correo de acceso actual:</label>
+                <input type="text" value={emailAuth || 'Cargando...'} disabled style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', backgroundColor: '#f1f5f9', color: '#64748b' }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', marginBottom: '25px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#991b1b', fontSize: '0.9rem' }}>Nuevo correo de acceso:</label>
+                  <input
+                    type="text"
+                    placeholder="Usuario o correo completo (se agrega @aluna.edu.co si no tiene @)"
+                    value={nuevoEmailAuth}
+                    onChange={(e) => setNuevoEmailAuth(e.target.value)}
+                    style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', fontWeight: 'bold' }}
+                  />
+                </div>
+                <button
+                  onClick={ejecutarCambioEmail}
+                  disabled={cambiandoEmail || !nuevoEmailAuth.trim()}
+                  style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: (cambiandoEmail || !nuevoEmailAuth.trim()) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
                 >
-                  {cambiandoClave ? <FaSpinner className="fa-spin" /> : <FaKey />} Forzar Cambio de Clave
+                  {cambiandoEmail ? <FaSpinner className="fa-spin" /> : <FaEdit />} Cambiar Correo
                 </button>
+              </div>
+
+              <div style={{ borderTop: '1px solid #fca5a5', paddingTop: '20px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#991b1b', fontSize: '0.9rem' }}>Restablecer contraseña:</label>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    placeholder="Escriba la nueva contraseña (mín. 8 caracteres)..."
+                    value={nuevaContrasena}
+                    onChange={(e) => setNuevaContrasena(e.target.value)}
+                    style={{ flex: 1, padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', fontWeight: 'bold' }}
+                  />
+                  <button
+                    onClick={ejecutarCambioClave}
+                    disabled={cambiandoClave || !nuevaContrasena}
+                    style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: (cambiandoClave || !nuevaContrasena) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
+                  >
+                    {cambiandoClave ? <FaSpinner className="fa-spin" /> : <FaKey />} Cambiar Clave
+                  </button>
+                </div>
               </div>
             </div>
 
