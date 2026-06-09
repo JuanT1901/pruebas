@@ -196,7 +196,7 @@ function ContenidoComportamiento() {
   if (cargandoLista) return <div style={{ textAlign: 'center', marginTop: '50px' }}><FaSpinner className="fa-spin" size={40} color="#f59e0b" /></div>
 
   return (
-    <div style={{ width: '100%', animation: 'fadeIn 0.3s ease-in-out' }}>
+    <div className={styles.planillaWrapper}>
       
       {vistaActual === 'lista' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -217,8 +217,8 @@ function ContenidoComportamiento() {
             </select>
           </header>
 
-          <div className={styles.card} style={{ overflow: 'hidden', borderTop: '4px solid #f59e0b' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className={styles.responsiveTableContainer} style={{ borderTop: '4px solid #f59e0b' }}>
+            <table className={styles.responsiveTable} style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#fffbeb', borderBottom: '2px solid #fde68a', color: '#92400e' }}>
                   <th style={{ padding: '15px 20px' }}>Estudiante</th>
@@ -231,16 +231,16 @@ function ContenidoComportamiento() {
                   const yaEvaluado = evaluacionesGlobales.some(e => e.student_id === est.id)
                   return (
                     <tr key={est.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                      <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>{est.full_name}</td>
-                      <td style={{ padding: '15px 20px', textAlign: 'center' }}>
+                      <td data-label="Estudiante" style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>{est.full_name}</td>
+                      <td data-label="Estado" style={{ padding: '15px 20px', textAlign: 'center' }}>
                         {yaEvaluado ? (
                           <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FaCheck /> Evaluado</span>
                         ) : (
                           <span style={{ backgroundColor: '#f1f5f9', color: '#64748b', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FaClock /> Pendiente</span>
                         )}
                       </td>
-                      <td style={{ padding: '15px 20px', textAlign: 'center' }}>
-                        <button 
+                      <td data-label="Acción" style={{ padding: '15px 20px', textAlign: 'center' }}>
+                        <button
                           onClick={() => { setEstudianteActivo(est); setVistaActual('formulario'); }}
                           style={{ backgroundColor: yaEvaluado ? '#f8fafc' : '#f59e0b', color: yaEvaluado ? '#64748b' : 'white', border: yaEvaluado ? '1px solid #cbd5e1' : 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                         >

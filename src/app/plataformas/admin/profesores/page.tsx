@@ -6,10 +6,10 @@ import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import { cambiarContrasenaProfesor, toggleEstadoProfesor, actualizarPerfilProfesor, asignarClaseProfesor, eliminarClaseProfesor, obtenerEmailAuth, actualizarEmailProfesor } from './actions'
 import styles from 'app/styles/pages/Dashboard.module.scss'
-import { FaChalkboardTeacher, FaBook, FaSpinner, 
-         FaUpload, FaArrowLeft, FaEdit, FaList, 
-         FaPlus, FaTrash, FaSave, FaUserEdit, 
-         FaUserCheck, FaUserSlash, FaKey } from 'react-icons/fa'
+import { FaChalkboardTeacher, FaBook, FaSpinner,
+         FaUpload, FaArrowLeft, FaEdit, FaList,
+         FaPlus, FaTrash, FaSave, FaUserEdit,
+         FaUserCheck, FaUserSlash, FaKey, FaIdCard, FaChevronDown } from 'react-icons/fa'
 
 export default function AdminProfesoresPage() {
   const [supabase] = useState(() => createBrowserClient(
@@ -276,74 +276,121 @@ export default function AdminProfesoresPage() {
             </Link>
           </header>
 
-          <div className={styles.card} style={{ maxWidth: '1000px', margin: '0 auto', overflow: 'hidden' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             {profesores.length === 0 ? (
-              <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
+              <div className={styles.card} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
                 No hay profesores registrados. Sube la matriz docente para comenzar.
               </div>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                    <th style={{ padding: '15px 20px' }}>Nombre del Profesor</th>
-                    <th style={{ padding: '15px 20px' }}>Documento</th>
-                    <th style={{ padding: '15px 20px', textAlign: 'center' }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {profesores.map((profe, index) => {
-                    const estaActivo = profe.is_active !== false; // Por defecto es true
-                    
-                    return (
-                      <tr key={profe.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc', opacity: estaActivo ? 1 : 0.6 }}>
-                        <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <FaChalkboardTeacher color={estaActivo ? "#3b82f6" : "#94a3b8"} /> 
-                          <span style={{ textDecoration: estaActivo ? 'none' : 'line-through' }}>{profe.full_name}</span>
-                          
-                          {/* Etiqueta Visual */}
-                          <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '12px', backgroundColor: estaActivo ? '#dcfce7' : '#fee2e2', color: estaActivo ? '#166534' : '#991b1b', marginLeft: '10px' }}>
-                            {estaActivo ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '15px 20px', color: '#64748b' }}>
-                          {profe.doc_number || 'N/A'}
-                        </td>
-                        <td style={{ padding: '15px 20px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                            
-                            {/* Botón de Habilitar/Deshabilitar */}
-                            <button 
-                              onClick={() => cambiarEstado(profe)}
-                              style={{ backgroundColor: estaActivo ? '#ef4444' : '#10b981', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
-                              title={estaActivo ? "Deshabilitar acceso" : "Restaurar acceso"}
-                            >
-                              {estaActivo ? <FaUserSlash /> : <FaUserCheck />}
-                            </button>
-
-                            {/* Solo permitimos editar/ver clases si el profe está activo */}
-                            {estaActivo && (
-                              <>
-                                <button 
-                                  onClick={() => { setProfeActivo(profe); setVista('clases'); }}
-                                  style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
-                                >
-                                  <FaList /> Clases
-                                </button>
-                                <button 
-                                  onClick={() => abrirEdicion(profe)}
-                                  style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
-                                >
-                                  <FaEdit /> Editar
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
+              <>
+                <div className={`${styles.card} ${styles.desktopOnly}`} style={{ overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                        <th style={{ padding: '15px 20px' }}>Nombre del Profesor</th>
+                        <th style={{ padding: '15px 20px' }}>Documento</th>
+                        <th style={{ padding: '15px 20px', textAlign: 'center' }}>Acciones</th>
                       </tr>
+                    </thead>
+                    <tbody>
+                      {profesores.map((profe, index) => {
+                        const estaActivo = profe.is_active !== false;
+
+                        return (
+                          <tr key={profe.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc', opacity: estaActivo ? 1 : 0.6 }}>
+                            <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <FaChalkboardTeacher color={estaActivo ? "#3b82f6" : "#94a3b8"} />
+                              <span style={{ textDecoration: estaActivo ? 'none' : 'line-through' }}>{profe.full_name}</span>
+                              <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '12px', backgroundColor: estaActivo ? '#dcfce7' : '#fee2e2', color: estaActivo ? '#166534' : '#991b1b', marginLeft: '10px' }}>
+                                {estaActivo ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '15px 20px', color: '#64748b' }}>
+                              {profe.doc_number || 'N/A'}
+                            </td>
+                            <td style={{ padding: '15px 20px', textAlign: 'center' }}>
+                              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                <button
+                                  onClick={() => cambiarEstado(profe)}
+                                  style={{ backgroundColor: estaActivo ? '#ef4444' : '#10b981', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                                  title={estaActivo ? "Deshabilitar acceso" : "Restaurar acceso"}
+                                >
+                                  {estaActivo ? <FaUserSlash /> : <FaUserCheck />}
+                                </button>
+                                {estaActivo && (
+                                  <>
+                                    <button
+                                      onClick={() => { setProfeActivo(profe); setVista('clases'); }}
+                                      style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                                    >
+                                      <FaList /> Clases
+                                    </button>
+                                    <button
+                                      onClick={() => abrirEdicion(profe)}
+                                      style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                                    >
+                                      <FaEdit /> Editar
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className={`${styles.mobileOnly} ${styles.accordionList}`}>
+                  {profesores.map((profe) => {
+                    const estaActivo = profe.is_active !== false;
+                    return (
+                      <details key={profe.id} className={styles.accordionItem} style={{ opacity: estaActivo ? 1 : 0.7 }}>
+                        <summary className={styles.accordionSummary}>
+                          <div className={styles.accordionHeading}>
+                            <strong style={{ textDecoration: estaActivo ? 'none' : 'line-through', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                              <FaChalkboardTeacher color={estaActivo ? "#3b82f6" : "#94a3b8"} size={14} />
+                              {profe.full_name}
+                            </strong>
+                            <div className={styles.accordionMeta}>
+                              <span><FaIdCard size={11} style={{ marginRight: 4 }} />{profe.doc_number || 'N/A'}</span>
+                              <span className={styles.accordionChip} style={{ backgroundColor: estaActivo ? '#dcfce7' : '#fee2e2', color: estaActivo ? '#166534' : '#991b1b' }}>
+                                {estaActivo ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </div>
+                          </div>
+                          <FaChevronDown className={styles.accordionChevron} />
+                        </summary>
+                        <div className={styles.accordionBody}>
+                          <button
+                            onClick={() => cambiarEstado(profe)}
+                            style={{ backgroundColor: estaActivo ? '#ef4444' : '#10b981', color: 'white', border: 'none', padding: '10px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                          >
+                            {estaActivo ? <><FaUserSlash /> Deshabilitar</> : <><FaUserCheck /> Habilitar</>}
+                          </button>
+                          {estaActivo && (
+                            <>
+                              <button
+                                onClick={() => { setProfeActivo(profe); setVista('clases'); }}
+                                style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '10px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                              >
+                                <FaList /> Clases
+                              </button>
+                              <button
+                                onClick={() => abrirEdicion(profe)}
+                                style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '10px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                              >
+                                <FaEdit /> Editar
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </details>
                     )
                   })}
-                </tbody>
-              </table>
+                </div>
+              </>
             )}
           </div>
         </>

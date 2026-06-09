@@ -50,7 +50,7 @@ export default function EstudianteBoletinesPage() {
   if (cargando) return <div style={{ textAlign: 'center', padding: '50px' }}>Cargando...</div>
 
   return (
-    <main style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
       <h1 style={{ color: '#1e293b' }}>Mis Boletines</h1>
       <p style={{ color: '#64748b' }}>Estudiante: <strong>{estudiante?.full_name}</strong> | Curso: <strong>{estudiante?.course_name}</strong></p>
 
@@ -58,7 +58,7 @@ export default function EstudianteBoletinesPage() {
         {[1, 2, 3].map(p => {
           const estaPublicado = estados.some(e => e.period === p)
           return (
-            <div key={p} style={{ backgroundColor: 'white', padding: '25px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={p} style={{ backgroundColor: 'white', padding: '25px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
               <div>
                 <h3 style={{ margin: 0 }}>Periodo {p}</h3>
                 <p style={{ margin: '5px 0 0 0', color: estaPublicado ? '#15803d' : '#94a3b8', fontSize: '0.9rem', fontWeight: 'bold' }}>

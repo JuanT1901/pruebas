@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { FaFilePdf, FaEye, FaEyeSlash, FaSpinner, FaGraduationCap, FaArrowLeft, FaUsers, FaCheckDouble, FaEdit, FaBook } from 'react-icons/fa'
 import { togglePublicacion, publicarTodosBoletines } from './actions'
+import stylesDashboard from 'app/styles/pages/Dashboard.module.scss'
 
 const CURSOS_PRIMARIA = ['Emprendedores', 'Ingeniosos', 'Transformadores'];
 const CURSOS_PREESCOLAR = ['Aventureros', 'Creativos', 'Expertos']; 
@@ -124,7 +125,7 @@ export default function AdminBoletinesPage() {
   if (cargando) return <div style={{ textAlign: 'center', marginTop: '100px' }}><FaSpinner className="fa-spin" size={40} color="#3b82f6" /></div>
 
   return (
-    <main style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
       
       {vistaActual === 'cursos' && (
         <>
@@ -216,8 +217,8 @@ export default function AdminBoletinesPage() {
             </div>
           </div>
 
-          <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className={stylesDashboard.responsiveTableContainer}>
+            <table className={stylesDashboard.responsiveTable} style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
                   <th style={{ padding: '15px 20px' }}>Estudiante</th>
@@ -231,13 +232,13 @@ export default function AdminBoletinesPage() {
 
                   return (
                     <tr key={est.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                      <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>
+                      <td data-label="Estudiante" style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <FaGraduationCap color="#94a3b8" /> {est.full_name}
                         </div>
                       </td>
-                      
-                      <td style={{ padding: '15px 20px', textAlign: 'center' }}>
+
+                      <td data-label="Estado" style={{ padding: '15px 20px', textAlign: 'center' }}>
                         {publicado ? (
                           <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold' }}>Visible</span>
                         ) : (
@@ -245,19 +246,19 @@ export default function AdminBoletinesPage() {
                         )}
                       </td>
 
-                      <td style={{ padding: '15px 20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                          <button 
+                      <td data-label="Acciones" style={{ padding: '15px 20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <button
                             onClick={() => window.open(`${obtenerRutaBoletin(cursoActivo)}?estudiante=${est.id}&periodo=${periodo}`, '_blank')}
-                            style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flex: '1 1 auto', justifyContent: 'center', minWidth: '110px' }}
                           >
                             <FaFilePdf /> Previa
                           </button>
-                          
-                          <button 
+
+                          <button
                             onClick={() => togglePublicacionIndividual(est.id)}
                             disabled={procesandoId === est.id}
-                            style={{ backgroundColor: publicado ? '#fee2e2' : '#dcfce7', color: publicado ? '#ef4444' : '#15803d', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', width: '130px', justifyContent: 'center' }}
+                            style={{ backgroundColor: publicado ? '#fee2e2' : '#dcfce7', color: publicado ? '#ef4444' : '#15803d', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flex: '1 1 auto', minWidth: '130px', justifyContent: 'center' }}
                           >
                             {procesandoId === est.id ? <FaSpinner className="fa-spin" /> : (publicado ? <><FaEyeSlash /> Retener</> : <><FaEye /> Publicar</>)}
                           </button>

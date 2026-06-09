@@ -1,5 +1,6 @@
 import Sidebar from 'app/components/Sidebar'
 import styles from 'app/styles/pages/Dashboard.module.scss'
+import sidebarStyles from 'app/styles/components/PlatformSidebar.module.scss'
 
 export default function EstudianteLayout({
   children,
@@ -9,7 +10,7 @@ export default function EstudianteLayout({
   return (
     <div className={styles.dashboardContainer}>
       <Sidebar />
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div className={sidebarStyles.contentArea}>
         {children}
       </div>
     </div>

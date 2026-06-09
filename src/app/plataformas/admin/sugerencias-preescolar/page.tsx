@@ -81,7 +81,7 @@ export default function SugerenciasPreescolarPage() {
   }
 
   return (
-    <main style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
       <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h1 style={{ margin: 0, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>

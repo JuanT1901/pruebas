@@ -39,7 +39,7 @@ export default function ImportarMallaCurricularPage() {
   }
 
   return (
-    <main style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
         <Link href="/plataformas/admin/profesores" style={{ color: '#64748b', fontSize: '1.2rem', textDecoration: 'none' }}>
           <FaArrowLeft />

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import { FaFilePdf, FaSpinner, FaGraduationCap, FaArrowLeft, FaUsers } from 'react-icons/fa'
+import stylesDashboard from 'app/styles/pages/Dashboard.module.scss'
 
 const CURSOS_PRIMARIA = ['Emprendedores', 'Ingeniosos', 'Transformadores'];
 const CURSOS_PREESCOLAR = ['Aventureros', 'Creativos', 'Expertos'];
@@ -72,7 +73,7 @@ export default function BoletinesDirectorPage() {
 
   if (cursosDirector.length === 0) {
     return (
-      <main style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+      <main style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
         <h1 style={{ color: '#ef4444' }}>Acceso Denegado</h1>
         <p style={{ color: '#64748b' }}>No eres director de grupo de ningún curso.</p>
       </main>
@@ -80,7 +81,7 @@ export default function BoletinesDirectorPage() {
   }
 
   return (
-    <main style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '1000px', margin: '0 auto' }}>
 
       {vistaActual === 'cursos' && (
         <>
@@ -140,8 +141,8 @@ export default function BoletinesDirectorPage() {
             </select>
           </header>
 
-          <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className={stylesDashboard.responsiveTableContainer}>
+            <table className={stylesDashboard.responsiveTable} style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
                   <th style={{ padding: '15px 20px' }}>Estudiante</th>
@@ -151,12 +152,12 @@ export default function BoletinesDirectorPage() {
               <tbody>
                 {estudiantes.map((est, index) => (
                   <tr key={est.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                    <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>
+                    <td data-label="Estudiante" style={{ padding: '15px 20px', fontWeight: 'bold', color: '#334155' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <FaGraduationCap color="#94a3b8" /> {est.full_name}
                       </div>
                     </td>
-                    <td style={{ padding: '15px 20px', textAlign: 'center' }}>
+                    <td data-label="Acciones" style={{ padding: '15px 20px', textAlign: 'center' }}>
                       <button
                         onClick={() => window.open(`${obtenerRutaBoletin(cursoActivo)}?estudiante=${est.id}&periodo=${periodo}`, '_blank')}
                         style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}

@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FaSpinner, FaPrint } from 'react-icons/fa'
+import { usePrintScale } from 'app/hooks/usePrintScale'
 
 // 🌟 LISTA DE CURSOS DE PREESCOLAR (Para el escudo de seguridad)
 const CURSOS_PREESCOLAR = ['Aventureros', 'Creativos', 'Expertos'];
@@ -44,6 +45,8 @@ function ContenidoBoletinPreescolarPDF() {
   const [sinPermiso, setSinPermiso] = useState(false);
 
   const [formatoPapel, setFormatoPapel] = useState('letter')
+
+  const { contentRef, scale, hostHeight } = usePrintScale([cargando, formatoPapel])
 
   useEffect(() => {
     if (!estudianteId || !periodo) return
@@ -174,9 +177,12 @@ function ContenidoBoletinPreescolarPDF() {
       thead { display: table-header-group !important; }
       tr.salto-pagina { page-break-inside: avoid !important; page-break-after: auto !important; }
       td, th { page-break-inside: avoid !important; }
+      .print-scale-host { overflow: visible !important; height: auto !important; }
+      .page-container { transform: none !important; margin: 0 auto !important; }
     }
 
     .page-container {
+      width: ${currPaper.w};
       max-width: ${currPaper.w};
       min-height: ${currPaper.h};
       margin: 0 auto;
@@ -185,6 +191,7 @@ function ContenidoBoletinPreescolarPDF() {
       font-family: Arial, sans-serif;
       color: #1e293b;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transform-origin: top left;
     }
 
     table { width: 100%; border-collapse: collapse !important; font-size: 0.75rem; margin-bottom: 0; }
@@ -240,9 +247,10 @@ function ContenidoBoletinPreescolarPDF() {
         </button>
       </div>
 
-      <div className="page-container print-wrapper">
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-          <div style={{ width: '100px' }}><img src="/logo-ludo.png" alt="Logo" style={{ maxWidth: '100%' }} /></div>
+      <div className="print-scale-host" style={{ overflow: scale < 1 ? 'hidden' : 'visible', height: hostHeight, width: '100%' }}>
+      <div ref={contentRef} className="page-container print-wrapper" style={{ transform: scale < 1 ? `scale(${scale})` : undefined, margin: scale < 1 ? '0' : undefined }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', padding: '0 25px', gap: '20px' }}>
+          <div style={{ width: '100px', flexShrink: 0 }}><img src="/logo-ludo.png" alt="Logo" style={{ width: '100%', height: 'auto', display: 'block' }} /></div>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{ border: '2px solid #1e293b', padding: '10px', display: 'inline-block' }}>
               <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Ludo Club</h1>
@@ -251,7 +259,7 @@ function ContenidoBoletinPreescolarPDF() {
             <h2 style={{ fontSize: '1.1rem', marginTop: '10px', textTransform: 'uppercase' }}>Informe individual de desempeño</h2>
             <p style={{ fontWeight: 'bold', margin: '2px 0 0 0' }}>Periodo {periodo} - Año 2026</p>
           </div>
-          <div style={{ width: '100px' }}><img src="/logo.jpeg" alt="Logo" style={{ maxWidth: '100%' }} /></div>
+          <div style={{ width: '100px', flexShrink: 0 }}><img src="/logo.jpeg" alt="Logo" style={{ width: '100%', height: 'auto', display: 'block' }} /></div>
         </header>
 
         <div style={{ display: 'flex', border: '1px solid #1e293b', marginBottom: '20px' }}>
@@ -344,11 +352,41 @@ function ContenidoBoletinPreescolarPDF() {
           </tbody>
         </table>
 
-        <footer style={{ marginTop: '50px', textAlign: 'center', pageBreakInside: 'avoid' }}>
+        <div style={{ marginTop: '20px', border: '1px solid #1e293b', padding: '10px 15px', pageBreakInside: 'avoid' }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '0.8rem', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>
+            Convenciones de Valoración
+          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-around', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <img src="/logro-alcanzado.png" alt="Logro alcanzado" style={{ width: 28, height: 28 }} />
+              <div>
+                <strong>Logro alcanzado</strong>
+                <div style={{ color: '#475569' }}>4.1 – 5.0</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <img src="/logro-en-proceso.png" alt="Logro en proceso" style={{ width: 28, height: 28 }} />
+              <div>
+                <strong>Logro en proceso</strong>
+                <div style={{ color: '#475569' }}>3.5 – 4.0</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <img src="/logro-iniciado.png" alt="Logro iniciado" style={{ width: 28, height: 28 }} />
+              <div>
+                <strong>Logro iniciado</strong>
+                <div style={{ color: '#475569' }}>1.0 – 3.4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer style={{ marginTop: '90px', textAlign: 'center', pageBreakInside: 'avoid' }}>
           <div style={{ borderTop: '1px solid #1e293b', width: '250px', margin: '0 auto 5px auto' }}></div>
           <strong style={{ textTransform: 'uppercase' }}>{director?.full_name || 'Director(a) de Grupo'}</strong>
           <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>Firma Docente</p>
         </footer>
+      </div>
       </div>
     </div>
   )

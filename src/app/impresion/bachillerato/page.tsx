@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FaSpinner, FaPrint, FaThumbsUp } from 'react-icons/fa'
+import { usePrintScale } from 'app/hooks/usePrintScale'
 
 const CURSOS_BACHILLERATO = ['Innovadores', 'Conquistadores', 'Gnomos', 'Duendes', 'Elfos'];
 
@@ -88,6 +89,8 @@ function ContenidoBoletinBachilleratoPDF() {
   const [formatoPapel, setFormatoPapel] = useState('letter')
   const [errorNivel, setErrorNivel] = useState(false);
   const [sinPermiso, setSinPermiso] = useState(false);
+
+  const { contentRef, scale, hostHeight } = usePrintScale([cargando, formatoPapel])
 
   useEffect(() => {
     if (!estudianteId || !periodo) return
@@ -231,7 +234,12 @@ function ContenidoBoletinBachilleratoPDF() {
       thead { display: table-header-group !important; }
       tr.salto-pagina { page-break-inside: avoid !important; }
     }
+    @media print {
+      .print-scale-host { overflow: visible !important; height: auto !important; }
+      .page-container { transform: none !important; margin: 0 auto !important; }
+    }
     .page-container {
+      width: ${currPaper.w};
       max-width: ${currPaper.w};
       min-height: ${currPaper.h};
       margin: 0 auto;
@@ -239,6 +247,8 @@ function ContenidoBoletinBachilleratoPDF() {
       padding: 15px;
       font-family: Arial, sans-serif;
       color: #1e293b;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transform-origin: top left;
     }
     table { width: 100%; border-collapse: collapse !important; font-size: 0.8rem; margin-bottom: 0; }
     th, td { padding: 8px 12px; border: 1px solid #1e293b; vertical-align: middle; }
@@ -287,18 +297,19 @@ function ContenidoBoletinBachilleratoPDF() {
         </button>
       </div>
 
-      <div className="page-container print-wrapper">
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-          <div style={{ width: '80px' }}><img src="/logo-ludo.png" alt="Logo" style={{ maxWidth: '100%' }} /></div>
+      <div className="print-scale-host" style={{ overflow: scale < 1 ? 'hidden' : 'visible', height: hostHeight, width: '100%' }}>
+      <div ref={contentRef} className="page-container print-wrapper" style={{ transform: scale < 1 ? `scale(${scale})` : undefined, margin: scale < 1 ? '0' : undefined }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', padding: '0 25px', gap: '20px' }}>
+          <div style={{ width: '100px', flexShrink: 0 }}><img src="/logo-ludo.png" alt="Logo" style={{ width: '100%', height: 'auto', display: 'block' }} /></div>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{ border: '2px solid #1e293b', padding: '10px', display: 'inline-block' }}>
               <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Ludo Club</h1>
               <p style={{ margin: 0, fontSize: '0.8rem' }}>Resolución 580 del 26 de junio de 2018</p>
             </div>
-            <h2 style={{ fontSize: '1.1rem', margin: '10px 0 5px 0', textTransform: 'uppercase' }}>Informe Académico - Bachillerato</h2>
+            <h2 style={{ fontSize: '1.1rem', margin: '10px 0 5px 0', textTransform: 'uppercase' }}>Informe individual de desempeño</h2>
             <p style={{ fontWeight: 'bold', margin: 0 }}>Periodo {periodo} - Año 2026</p>
           </div>
-          <div style={{ width: '80px' }}><img src="/logo.jpeg" alt="Logo" style={{ maxWidth: '100%' }} /></div>
+          <div style={{ width: '100px', flexShrink: 0 }}><img src="/logo.jpeg" alt="Logo" style={{ width: '100%', height: 'auto', display: 'block' }} /></div>
         </header>
 
         <div style={{ display: 'flex', border: '1px solid #1e293b', marginBottom: '20px' }}>
@@ -321,7 +332,9 @@ function ContenidoBoletinBachilleratoPDF() {
                   <td colSpan={4} className="area-header">ÁREA: {bloqueArea.area}</td>
                 </tr>
 
-                {bloqueArea.asignaturas.map((asignatura: any, idxAsig: number) => (
+                {bloqueArea.asignaturas.map((asignatura: any, idxAsig: number) => {
+                  const esComportamiento = bloqueArea.area === 'Comportamiento'
+                  return (
                   <Fragment key={`${idxA}-${idxAsig}`}>
                     <tr>
                       <td colSpan={4} className="subject-header">ASIGNATURA: {asignatura.nombre}</td>
@@ -346,28 +359,68 @@ function ContenidoBoletinBachilleratoPDF() {
 
                     {/* 🌟 LAS 3 CELDAS DE VALORACIÓN PERFECTAMENTE ALINEADAS */}
                     <tr className="salto-pagina nota-final-row">
-                      <td colSpan={2} className="label-final">
+                      <td colSpan={esComportamiento ? 3 : 2} className="label-final">
                         VALORACIÓN FINAL DE {asignatura.nombre}:
                       </td>
-                      <td className="valor-final">
-                        {asignatura.promedio > 0 ? asignatura.promedio.toFixed(1) : '-'}
-                      </td>
+                      {!esComportamiento && (
+                        <td className="valor-final">
+                          {asignatura.promedio > 0 ? asignatura.promedio.toFixed(1) : '-'}
+                        </td>
+                      )}
                       <td className="icono-final">
                         {obtenerIconoBachillerato(asignatura.promedio)}
                       </td>
                     </tr>
                   </Fragment>
-                ))}
+                  )
+                })}
               </Fragment>
             ))}
           </tbody>
         </table>
 
-        <footer style={{ marginTop: '50px', textAlign: 'center', pageBreakInside: 'avoid' }}>
+        <div style={{ marginTop: '20px', border: '1px solid #1e293b', padding: '10px 15px', pageBreakInside: 'avoid' }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '0.8rem', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>
+            Convenciones de Valoración
+          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-around', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <FaThumbsUp size={22} color="#eab308" />
+              <div>
+                <strong>Superior</strong>
+                <div style={{ color: '#475569' }}>4.5 – 5.0</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <FaThumbsUp size={22} color="#3b82f6" />
+              <div>
+                <strong>Alto</strong>
+                <div style={{ color: '#475569' }}>4.0 – 4.4</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <FaThumbsUp size={22} color="#22c55e" style={{ transform: 'rotate(30deg)' }} />
+              <div>
+                <strong>Básico</strong>
+                <div style={{ color: '#475569' }}>3.5 – 3.9</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+              <FaThumbsUp size={22} color="#ef4444" style={{ transform: 'rotate(90deg)' }} />
+              <div>
+                <strong>Bajo</strong>
+                <div style={{ color: '#475569' }}>1.0 – 3.4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer style={{ marginTop: '90px', textAlign: 'center', pageBreakInside: 'avoid' }}>
           <div style={{ borderTop: '1px solid #1e293b', width: '250px', margin: '0 auto 5px auto' }}></div>
           <strong style={{ textTransform: 'uppercase' }}>{director?.full_name || 'Director(a) de Grupo'}</strong>
           <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>Firma Autorizada</p>
         </footer>
+      </div>
       </div>
     </div>
   )

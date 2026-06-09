@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import styles from 'app/styles/pages/Dashboard.module.scss'
-import { FaUserPlus, FaUserGraduate, FaSpinner, FaSearch, FaEdit, FaTimes, FaSave, FaFilter, FaCheckCircle, FaAddressCard, FaFemale, FaMale, FaBus, FaChevronDown, FaChevronUp, FaKey } from 'react-icons/fa'
+import { FaUserPlus, FaUserGraduate, FaSpinner, FaSearch, FaEdit, FaTimes, FaSave, FaFilter, FaCheckCircle, FaAddressCard, FaFemale, FaMale, FaBus, FaChevronDown, FaChevronUp, FaKey, FaIdCard, FaSchool } from 'react-icons/fa'
 import { actualizarEstudiante, obtenerEmailAuth, actualizarCredencialesEstudiante } from './actions'
 
 export default function EstudiantesPage() {
@@ -226,23 +226,47 @@ export default function EstudiantesPage() {
         </div>
 
         {cargando ? <div style={{ textAlign: 'center', padding: '40px' }}><FaSpinner className="fa-spin" size={30} color="#3CA0E8" /></div> : estudiantesFiltrados.length === 0 ? <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}><FaUserGraduate size={50} style={{ marginBottom: '15px', opacity: 0.5 }} /><h3>No se encontraron estudiantes</h3></div> : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead><tr style={{ borderBottom: '2px solid #e2e8f0', color: '#475569' }}><th style={{ padding: '15px 10px' }}>Nombre Completo</th><th style={{ padding: '15px 10px' }}>Documento</th><th style={{ padding: '15px 10px' }}>Curso</th><th style={{ padding: '15px 10px', textAlign: 'center' }}>Acciones</th></tr></thead>
-              <tbody>
-                {estudiantesFiltrados.map((est) => (
-                  <tr key={est.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '15px 10px', fontWeight: 'bold' }}>{est.full_name}</td>
-                    <td style={{ padding: '15px 10px' }}>{est.doc_type} {est.doc_number}</td>
-                    <td style={{ padding: '15px 10px' }}><span style={{ backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', fontSize: '0.9rem', color: '#475569', fontWeight: 'bold' }}>{est.course_name || 'Sin asignar'}</span></td>
-                    <td style={{ padding: '15px 10px', textAlign: 'center' }}>
-                      <button onClick={() => abrirModalEdicion(est)} style={{ backgroundColor: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 'bold' }}><FaEdit /> Editar</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className={styles.desktopOnly} style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead><tr style={{ borderBottom: '2px solid #e2e8f0', color: '#475569' }}><th style={{ padding: '15px 10px' }}>Nombre Completo</th><th style={{ padding: '15px 10px' }}>Documento</th><th style={{ padding: '15px 10px' }}>Curso</th><th style={{ padding: '15px 10px', textAlign: 'center' }}>Acciones</th></tr></thead>
+                <tbody>
+                  {estudiantesFiltrados.map((est) => (
+                    <tr key={est.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '15px 10px', fontWeight: 'bold' }}>{est.full_name}</td>
+                      <td style={{ padding: '15px 10px' }}>{est.doc_type} {est.doc_number}</td>
+                      <td style={{ padding: '15px 10px' }}><span style={{ backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', fontSize: '0.9rem', color: '#475569', fontWeight: 'bold' }}>{est.course_name || 'Sin asignar'}</span></td>
+                      <td style={{ padding: '15px 10px', textAlign: 'center' }}>
+                        <button onClick={() => abrirModalEdicion(est)} style={{ backgroundColor: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 'bold' }}><FaEdit /> Editar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className={`${styles.mobileOnly} ${styles.accordionList}`}>
+              {estudiantesFiltrados.map((est) => (
+                <details key={est.id} className={styles.accordionItem}>
+                  <summary className={styles.accordionSummary}>
+                    <div className={styles.accordionHeading}>
+                      <strong>{est.full_name}</strong>
+                      <div className={styles.accordionMeta}>
+                        <span><FaIdCard size={11} style={{ marginRight: 4 }} />{est.doc_type} {est.doc_number}</span>
+                        <span className={styles.accordionChip}><FaSchool size={10} style={{ marginRight: 4 }} />{est.course_name || 'Sin asignar'}</span>
+                      </div>
+                    </div>
+                    <FaChevronDown className={styles.accordionChevron} />
+                  </summary>
+                  <div className={styles.accordionBody}>
+                    <button onClick={() => abrirModalEdicion(est)} style={{ backgroundColor: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', padding: '10px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
+                      <FaEdit /> Editar ficha
+                    </button>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
